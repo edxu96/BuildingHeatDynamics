@@ -1,0 +1,107 @@
+---
+title: "DTU02417A4: State Space Model and Kalman Filter"
+output: html_notebook
+author: Edward J. Xu
+date: May 16th, 2019
+---
+
+```{r, include=FALSE}
+# Clear variables
+rm(list = ls())
+library(knitr)
+```
+
+```{r}
+library(lubridate)
+library(FKF)
+library(numDeriv)
+source("KalmanFilterFunction.R")
+```
+
+```{r}
+frameData <- function(){
+    dat <- read.csv("Data/data_building.csv")
+    vecTimeStamp <- ymd_hms(dat[, 1], "%Y%m%d %H:%M:%S", tz = "UTC")
+    numObs <- length(vecTimeStamp) - 1
+    dat <- data.frame("series" = seq(1, numObs), "time" = vecTimeStamp[1:numObs], "tempIn" = dat[,2], 
+                      "tempAir" = dat[,3], "heat" = dat[,4], "solar" = dat[,5])
+    return(dat)
+}
+dat <- frameData()
+rm(frameData)
+numTrain <- length(dat$series) - 3
+```
+
+# Question 4.2
+
+```{r, fig.height = 6, fig.width = 11}
+plotTrainTestData(dat$series, dat$tempIn, numTrain, tail(dat$tempIn, n = 3), "Indoor Temperature")
+```
+
+```{r, fig.height = 6, fig.width = 11}
+plotTrainTestData(dat$series, dat$tempAir, numTrain, tail(dat$tempAir, n = 3), "Outdoor Temperature")
+```
+
+```{r, fig.height = 6, fig.width = 11}
+plotTrainTestData(dat$series, dat$solar, numTrain, tail(dat$solar, n = 3), "Solar Irradiation")
+```
+
+```{r, fig.height = 6, fig.width = 11}
+plotTrainTestData(dat$series, dat$heat, numTrain, tail(dat$heat, n = 3), "Heating Power")
+```
+
+# Question 4.3
+
+```{r}
+matU <- matrix(NA, nrow = 3, ncol = numTrain)
+matU[1,] <- dat$tempAir[1:numTrain]
+matU[2,] <- dat$heat[1:numTrain]
+matU[3,] <- dat$solar[1:numTrain]
+matA <- matrix(c(0.775, 0.1, 0.24, 0.9), nrow = 2)       
+matB <- matrix(c(0.005, 0, 0.127, 0, 0.335, 0), nrow = 2)      
+matC <- matrix(c(1, 0), nrow = 1)
+matSigma1_1 <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+matSigma2_1 <- matrix(0.5)
+modKalman_1 <- fkf(a0 = c(25, 25), P0 = diag(c(10, 10), 2), dt = matB %*% matU, ct = 0, Tt = matA, Zt = matC, 
+    HHt = matSigma1_1, GGt = matSigma2_1, yt = matrix(dat$tempIn[1:numTrain], nrow = 1), check.input = TRUE)
+```
+
+```{r, fig.height = 6, fig.width = 11}
+plotRecons(537, 537, modKalman_1$att[1,], dat$tempIn, modKalman_1$Ptt[1,1,])
+```
+
+```{r, fig.height = 6, fig.width = 11}
+matU.pred <- t(cbind(tail(dat$tempAir, n = 3), tail(dat$heat, n = 3), tail(dat$solar, n = 3)))
+```
+
+```{r, fig.height = 6, fig.width = 11}
+predictPlotKalmanFilter(modKalman_1, matSigma1_1, 10, matA, matB, matU.pred)
+```
+
+# Question 4.4
+
+```{r}
+resultOptim <- optim(c(25, 25, 10, 10, 0.5, 0.5, 0.5), logLikKalmanFilter, method = "L-BFGS-B", lower = rep(10^-6, 7), 
+    upper = c(40, 40, 40, 40, 5, 5, 5))
+```
+
+```{r, fig.height = 6, fig.width = 11}
+modKalman_optim <- calKalmanFilter(resultOptim$par)
+matSigma1_optim <- matrix(c(resultOptim$par[5], 0, 0, resultOptim$par[6]), nrow = 2)
+predictPlotKalmanFilter(modKalman_optim, matSigma1_optim, 10, matA, matB, matU.pred)
+```
+
+Uncertainty in Parameter Estimation
+
+```{r}
+sigma.hat.2 <- resultOptim$value / (numTrain - 1)
+varTheta <- 2 * sigma.hat.2 * solve(hessian(func = logLikKalmanFilter, x = resultOptim$par))
+stdDeviationTheta <- sqrt(diag(varTheta))
+confInt <- cbind(est = resultOptim$par, low = resultOptim$par - 1.96 * stdDeviationTheta, 
+                 up = resultOptim$par + 1.96 * stdDeviationTheta)
+```
+
+```{r, eval=FALSE}
+source("SaveImages.R")
+```
+
