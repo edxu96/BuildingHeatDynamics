@@ -1,12 +1,12 @@
-# MatrixTSA:
-
-Multivariate Time Series Analysis in Matrix
+# MatrixTSA: Multivariate Time Series Analysis in Matrix
 
 ![](./images/tangram_1.png)
 
-## How to Install
+## How to Use
 
-
+```
+mat_oi <- get_mat_oi(datf)
+```
 
 ## More Info
 
