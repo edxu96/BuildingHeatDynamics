@@ -4,6 +4,8 @@
 
 ## How to Use
 
+The input and output from observations of some dynamic process can always be combined to a matrix, which we call `mat_oi`. For outputs with uni-variate time series, there are only two columns in the matrix. For those with multivariate time series, it's convenient to see the data in matrix.
+
 ```
 mat_oi <- get_mat_oi(datf)
 ```
