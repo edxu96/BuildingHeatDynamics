@@ -1,6 +1,9 @@
 
 #' Fit a Base Splines Regression Model
 #'
+#' @param datf
+#' @return
+#' @export
 reg_bsplines <- function(datf, df, whe_intercept=TRUE){
     if (whe_intercept) {
         lm <- lm(P ~ 0 + bs(Te, df=4, intercept=TRUE), df_x)

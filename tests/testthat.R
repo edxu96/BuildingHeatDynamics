@@ -2,11 +2,8 @@
 # Edward J. Xu
 # Aug 26, 2019
 
-setwd("~/GitHub/MatrixTSA/tests")
-
-source("../R/main.R")
-source("./src/data.R")
-source("./src/reg.R")
+library(testthat)
+library(MatrixTSA)
 
 # context("String length")
 # library(stringr)

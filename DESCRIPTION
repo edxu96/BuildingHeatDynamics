@@ -1,0 +1,12 @@
+Package: MatrixTSA
+Type: Package
+Title: Multivariate Time Series Analysis in Matrix
+Version: 0.1.0
+Author: Edward J. Xu
+Maintainer: Edward J. Xu <edxu96@outlook.com>
+Description: Multivariate Time Series Analysis in Matrix
+    Regression: Local Regression
+    Test
+License: MIT
+Encoding: UTF-8
+LazyData: true
