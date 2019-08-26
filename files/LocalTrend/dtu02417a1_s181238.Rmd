@@ -1,0 +1,735 @@
+---
+title: "dtu02417a1: Steady State Building Model"
+output: html_notebook
+author: Edward J. Xu (Jie Xu), s181238
+date: 11th March, 2019
+---
+
+```{r, include=FALSE}
+# Clear variables
+rm(list=ls())
+library(knitr)
+```
+
+# Question 1.1
+
+Read the 3h and the 6h data and plot the given quantities as a function of time. Do indicate which data is used for training and testing. Comment on the evolution of the values over time. It is OK if the plot is combined with results from the following questions.
+
+```{r, warning=FALSE}
+dat_3h <- read.csv("house_data_3h.csv")
+time <- dat_3h[ , 1]
+heating <- dat_3h[ , 2]
+tempExternal <- dat_3h[ , 3]
+iSolar <- dat_3h[ , 4]
+series <- seq(1, length(time))
+dat.f_3h <- data.frame(series, time, heating, tempExternal, iSolar)
+n_3h <- length(dat.f_3h$series) - 8
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+plot(dat.f_3h$series, dat.f_3h$heating, 
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8,
+     main = "Training and Testing Data of Heating in 3h Data", xlab = "Series", ylab = "W")
+points(dat.f_3h$series[(n_3h+1):(n_3h+8)], dat.f_3h$heating[(n_3h+1):(n_3h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+```{r, fig.height = 5, fig.width = 10}
+plot(dat.f_3h$series, dat.f_3h$tempExternal, 
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8,
+     main = "Training and Testing Data of External Temperature in 3h Data", xlab = "Series", ylab = "Celsius Degree")
+points(dat.f_3h$series[(n_3h+1):(n_3h+8)], dat.f_3h$tempExternal[(n_3h+1):(n_3h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("bottomleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+plot(dat.f_3h$series, dat.f_3h$iSolar, 
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8, 
+     main = "Training and Testing Data of Solar Irradiation in 3h Data", xlab = "Series", ylab = "W / m2")
+points(dat.f_3h$series[(n_3h+1):(n_3h+8)], dat.f_3h$iSolar[(n_3h+1):(n_3h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+```{r, warning=FALSE}
+dat_6h <- read.csv("house_data_6h.csv")
+time <- dat_6h[ , 1]
+heating <- dat_6h[ , 2]
+tempExternal <- dat_6h[, 3]
+iSolar <- dat_6h[ , 4]
+series <- seq(1, length(time))
+dat.f_6h <- data.frame(series, time, heating, tempExternal, iSolar)
+n_6h <- length(dat.f_6h$series) - 4
+```
+
+```{r, fig.height = 5, fig.width = 10}
+plot(dat.f_6h$series, dat.f_6h$heating,
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8, 
+     main = "Training and Testing Data of Heating in 6h Data", xlab = "Series", ylab = "W")
+points(dat.f_6h$series[(n_6h+1):(n_6h+8)], dat.f_6h$heating[(n_6h+1):(n_6h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+```{r, fig.height = 5, fig.width = 10}
+plot(dat.f_6h$series, dat.f_6h$tempExternal, 
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8, 
+     main = "Training and Testing Data of External Temperature in 6h Data", xlab = "Series", ylab = "Celsius Degree")
+points(dat.f_6h$series[(n_6h+1):(n_6h+8)], dat.f_6h$tempExternal[(n_6h+1):(n_6h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("bottomleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+plot(dat.f_6h$series, dat.f_6h$iSolar, 
+     type = "b", col = "blue", lwd = 2, lty = 1, cex = 0.8, 
+     main = "Training and Testing Data of Solar Irradiation in 6h Data", xlab = "Series", ylab = "W / m2")
+points(dat.f_6h$series[(n_6h+1):(n_6h+8)], dat.f_6h$iSolar[(n_6h+1):(n_6h+8)], 
+       col = "blue", lty = 1, pch = 16, cex = 0.8)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data"), col = c("blue", "blue"), 
+       pch = c(1, 16), lty = c(1, 1), lwd = c(2, 2))
+```
+
+# Question 1.2
+
+The observations in the last 24 hours are kept only for comparisons, so they are not in the training data set.
+
+## Define functions for General Linear Model (GLM)
+
+```{r}
+# ----------------------------------------------------------------------------------------------------------------------
+cal_vec_sse.hat <- function(mat_x, vec_y, vec_theta.hat, mat_capSigma = diag(length(mat_x[,1]))){
+    # Calculate the sum of squared error (sse), eq.
+    vec_epsilon <- vec_y - mat_x %*% vec_theta.hat
+    sse.hat <- t(vec_epsilon) %*% solve(mat_capSigma) %*% vec_epsilon
+    return(sse.hat)
+}
+cal_sigma.hat <- function(mat_x, vec_y, vec_theta.hat, mat_capSigma = diag(length(mat_x[,1]))){
+    # Estimator for the variance, eq 3.44, Theorem 3.4, P39
+    sigma.hat.square <- cal_vec_sse.hat(mat_x, vec_y, vec_theta.hat, mat_capSigma) /
+                        (length(mat_x[,1]) - length(vec_theta.hat))
+    sigma.hat <- sqrt(drop(sigma.hat.square))
+    return(sigma.hat)
+}
+cal_mat_var.theta.hat <- function(mat_x, sigma.hat, mat_capSigma= diag(length(mat_x[,1]))){
+    # Calculate the variance of vec_theta.hat, eq 3.43, P39
+    mat_var.theta.hat <- sigma.hat^2 * solve(t(mat_x) %*% solve(mat_capSigma) %*% mat_x)
+    return(drop(mat_var.theta.hat))
+}
+cal_mat_intervalConf <- function(prob = 0.95, mat_x, vec_theta.hat, vec_y){
+    n <- length(mat_x[,1])
+    p <- length(vec_theta.hat)
+    quantileStudentDist <- qt(p = prob, df = n - p)
+    vec_var.y.hat <- (vec_y - mat_x %*% vec_theta.hat)^2
+    vec_boundUp <- mat_x %*% vec_theta.hat + quantileStudentDist * sqrt(vec_var.y.hat / n)
+    vec_boundLow <- mat_x %*% vec_theta.hat - quantileStudentDist * sqrt(vec_var.y.hat / n)
+    return(list(vec_boundUp = vec_boundUp, vec_boundLow = vec_boundLow))
+}
+```
+
+## Define functions of weighted least square estimation, with default "mat_capSigma" being identity matrix.
+
+```{r}
+pred_vec_theta.hat <- function(mat_x, vec_y, mat_capSigma = diag(length(mat_x[,1]))){
+    vec_theta.hat <- solve(t(mat_x) %*% solve(mat_capSigma) %*% mat_x) %*% t(mat_x) %*% solve(mat_capSigma) %*% vec_y
+    return(vec_theta.hat)
+}
+```
+
+## 1.2.1
+
+Formulate a linear regression model to estimate theta, in which it is assumed that the residuals have a constant variance and are independent. Estimate the parameters using the 6h data and include a measure of uncertainty for each of the estimates. 
+
+```{r, warning=FALSE}
+mat_x_6h <- cbind(1, dat.f_6h$tempExternal[1:n_6h], dat.f_6h$iSolar[1:n_6h])
+vec_y_6h <- dat.f_6h$heating[1:n_6h]
+vec_theta.hat_ols_6h <- pred_vec_theta.hat(mat_x = mat_x_6h, vec_y = vec_y_6h)
+sigma.hat_ols_6h <- cal_sigma.hat(mat_x = mat_x_6h, vec_theta.hat = vec_theta.hat_ols_6h, vec_y = vec_y_6h)
+mat_var.theta.hat_ols_6h <- cal_mat_var.theta.hat(mat_x = mat_x_6h, sigma = sigma.hat_ols_6h)
+tempInternal_ols_6h <- vec_theta.hat_ols_6h[1] / - vec_theta.hat_ols_6h[2]
+tempInternal_ols_6h
+```
+
+Plot the residuals for this model.
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+vec_epsilon_ols_6h <- vec_y_6h - mat_x_6h %*% vec_theta.hat_ols_6h
+plot(dat.f_6h$series[1:n_6h], vec_epsilon_ols_6h, type = "b", col = "blue", lwd = 2, 
+     main = "Residuals of Ordinary Least Square Estimation using 6h Data", xlab = "Series", ylab = "W")
+```
+
+Estimate the parameters using the 3h data and include a measure of uncertainty for each of the estimates. 
+
+```{r, warning=FALSE}
+mat_x_3h <- cbind(1, dat.f_3h$tempExternal[1:n_3h], dat.f_3h$iSolar[1:n_3h])
+vec_y_3h <- dat.f_3h$heating[1:n_3h]
+vec_theta.hat_ols_3h <- pred_vec_theta.hat(mat_x = mat_x_3h, vec_y = vec_y_3h)
+sigma.hat_ols_3h <- cal_sigma.hat(mat_x = mat_x_3h, vec_theta.hat = vec_theta.hat_ols_3h, vec_y = vec_y_3h)
+mat_var.theta.hat_ols_3h <- cal_mat_var.theta.hat(mat_x = mat_x_3h, sigma = sigma.hat_ols_3h)
+tempInternal_ols_3h <- vec_theta.hat_ols_3h[1] / - vec_theta.hat_ols_3h[2]
+tempInternal_ols_3h
+```
+
+Plot the residuals for this model.
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+vec_epsilon_ols_3h <- vec_y_3h - mat_x_3h %*% vec_theta.hat_ols_3h
+plot(dat.f_3h$series[1:n_3h], vec_epsilon_ols_3h, type = "b", col = "blue", lwd = 2, 
+     main = "Residuals of Ordinary Least Square Estimation using 3h Data", xlab = "Series", ylab = "W")
+```
+
+## 1.2.2
+
+Now, we assume that the correlation structure of the residiuals is an exponential decaying function of the time distance between two observations, define the relaxation algorithm:
+
+```{r}
+do_mat_capSigma_expDecay <- function(rho, n){
+    mat_capSigma <- diag(n)
+    for (i in 1: n){
+        for (j in 1: n){
+            mat_capSigma[i, j] <- rho^(abs(i - j))
+        }
+    }
+    return(mat_capSigma)
+}
+do_newRho <- function(mat_x, vec_epsilon, sigma, n){
+    sum <- 0
+    for (i in 1: (n - 1)){
+        sum <- sum + vec_epsilon[i] * vec_epsilon[i+1]
+    }
+    rho <- sum / (sigma^2 * (n - 1))
+    return(rho)
+}
+cal_rho_expDecayRelaxAlgo <- function(mat_x, vec_y){
+    rho <- 0
+    n <- length(mat_x[,1])
+    for (t in 1: 5){
+        mat_capSigma <- do_mat_capSigma_expDecay(rho, n)
+        vec_theta.hat <- pred_vec_theta.hat(mat_x, vec_y, mat_capSigma)
+        sigma.hat <- cal_sigma.hat(mat_x, vec_y, vec_theta.hat)
+        vec_epsilon <- vec_y - mat_x %*% vec_theta.hat
+        rho <- do_newRho(mat_x, vec_epsilon, sigma.hat, n)
+    }
+    return(rho)
+}
+```
+
+```{r}
+(rho_expDecay_6h <- cal_rho_expDecayRelaxAlgo(mat_x = mat_x_6h, vec_y = vec_y_6h))
+mat_capSigma_expDecay_6h <- do_mat_capSigma_expDecay(rho = rho_expDecay_6h, 
+                                                                 n = n_6h)
+vec_theta.hat_expDecay_6h <- pred_vec_theta.hat(mat_x = mat_x_6h, vec_y = vec_y_6h, 
+                                        mat_capSigma = mat_capSigma_expDecay_6h)
+sigma.hat_expDecay_6h <- cal_sigma.hat(mat_x = mat_x_6h, vec_theta.hat = vec_theta.hat_expDecay_6h, vec_y = vec_y_6h)
+mat_var.theta.hat_expDecay_6h <- cal_mat_var.theta.hat(mat_x = mat_x_6h, sigma = sigma.hat_expDecay_6h)
+(tempInternal_expDecay_6h <- vec_theta.hat_expDecay_6h[1] / - vec_theta.hat_expDecay_6h[2])
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+vec_epsilon_expDecay_6h <- vec_y_6h - mat_x_6h %*% vec_theta.hat_expDecay_6h
+plot(dat.f_6h$series[1:n_6h], vec_epsilon_expDecay_6h, 
+     type = "l", col = "red", lwd = 3, 
+     main = "Comparison of Residuals from OLS and WLS(Exp Decay) using 6h Data", xlab = "Series", ylab = "W")
+lines(dat.f_6h$series[1:n_6h], vec_epsilon_ols_6h, 
+      type = "l", col = "blue", lty = 2, lwd = 2)
+legend("bottomleft", inset = .02, legend = c("OLS(Identity)", "WLS(Exp Decay)"), col = c("blue", "red"), 
+       lty = c(2, 1), lwd = c(2, 3), cex= 0.8)
+```
+
+```{r, echo = FALSE}
+list_capSigma <- c('Sigma being Identity Matrixt', 'Sigma with Exp Decaying')
+list_rho_6h <- c(0, rho_expDecay_6h)
+list_sigma.hat_6h <- c(sigma.hat_ols_6h, sigma.hat_expDecay_6h)
+list_theta1.hat_6h <- c(vec_theta.hat_ols_6h[1], vec_theta.hat_expDecay_6h[1])
+list_theta2.hat_6h <- c(vec_theta.hat_ols_6h[2], vec_theta.hat_expDecay_6h[2])
+list_theta3.hat_6h <- c(vec_theta.hat_ols_6h[3], vec_theta.hat_expDecay_6h[3])
+list_temoInterval_6h <- c(tempInternal_ols_6h, tempInternal_expDecay_6h)
+table_6h <- data.frame(list_capSigma, list_rho_6h, list_theta1.hat_6h, list_theta2.hat_6h, 
+                       list_theta3.hat_6h, list_sigma.hat_6h, list_temoInterval_6h)
+kable(table_6h, col.names = c('capSigma', 'rho', 'theta1.hat', 'theta2.hat', 'theta3.hat', 'sigma.hat', 'tempInternal'), 
+      caption = 'Comparison when Sigmas are different', align = "l")
+```
+
+## 1.2.3
+
+```{r}
+(rho_expDecay_3h <- cal_rho_expDecayRelaxAlgo(mat_x = mat_x_3h, vec_y = vec_y_3h))
+mat_capSigma_expDecay_3h <- do_mat_capSigma_expDecay(rho = rho_expDecay_3h, 
+                                                                 n = n_3h)
+vec_theta.hat_expDecay_3h <- pred_vec_theta.hat(mat_x = mat_x_3h, vec_y = vec_y_3h, 
+                                   mat_capSigma = mat_capSigma_expDecay_3h)
+sigma.hat_expDecay_3h <- cal_sigma.hat(mat_x = mat_x_3h, vec_y = vec_y_3h, vec_theta.hat = vec_theta.hat_expDecay_3h)
+mat_var.theta.hat_expDecay_3h <- cal_mat_var.theta.hat(mat_x = mat_x_3h, sigma = sigma.hat_expDecay_3h)
+(tempInternal_expDecay_3h <- vec_theta.hat_expDecay_3h[1] / - vec_theta.hat_expDecay_3h[2])
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+vec_epsilon_expDecay_3h <- vec_y_3h - mat_x_3h %*% vec_theta.hat_expDecay_3h
+plot(dat.f_3h$series[1:n_3h], vec_epsilon_expDecay_3h, 
+     type = "l", col = "red", lwd = 3, 
+     main = "Comparison of Residuals from OLS and WLS(Exp Decay) using 3h Data", xlab = "Series", ylab = "W")
+lines(dat.f_3h$series[1:n_3h], vec_epsilon_ols_3h, 
+      type = "l", col = "blue", lty = 2, lwd = 2)
+legend("bottomleft", inset = .02, legend = c("OLS(Identity)", "WLS(Exp Decay)"), col = c("blue", "red"), 
+       lty = c(2, 1), lwd = c(2, 3), cex= 0.8)
+```
+
+```{r, echo = FALSE}
+list_capSigma <- c('Sigma being Identity Matrixt', 'Sigma with Exp Decaying')
+list_rho_3h <- c(0, rho_expDecay_3h)
+list_sigma.hat_3h <- c(sigma.hat_ols_3h, sigma.hat_expDecay_3h)
+list_theta1.hat_3h <- c(vec_theta.hat_ols_3h[1], vec_theta.hat_expDecay_3h[1])
+list_theta2.hat_3h <- c(vec_theta.hat_ols_3h[2], vec_theta.hat_expDecay_3h[2])
+list_theta3.hat_3h <- c(vec_theta.hat_ols_3h[3], vec_theta.hat_expDecay_3h[3])
+list_temoInterval_3h <- c(tempInternal_ols_3h, tempInternal_expDecay_3h)
+table_3h <- data.frame(list_capSigma, list_rho_3h, list_theta1.hat_3h, list_theta2.hat_3h, 
+                       list_theta3.hat_3h, list_sigma.hat_3h, list_temoInterval_3h)
+kable(table_3h, col.names = c('capSigma', 'rho', 'theta1.hat', 'theta2.hat', 'theta3.hat', 'sigma.hat', 'tempInternal'), 
+      caption = 'Comparison when Sigmas are different', align = "l")
+```
+
+# Question 3,  Local Trend mode
+
+## 3.1,  Local Linear Trend Model
+
+Define functions for trend model.
+
+```{r}
+do_seq_zeroDecreaseRev <- function(n){return(rev(- seq(0, n-1)))}
+do_mat_capSigma_trend <- function(lambda = 1, n){
+    mat_capSigma_trend <- diag(n)
+    seq_zdi <- do_seq_zeroDecreaseRev(n)
+    for (i in 1: n){
+        mat_capSigma_trend[i, i] <- 1 * lambda^seq_zdi[i]
+    }
+    return(mat_capSigma_trend)
+}
+cal_mat_capF_trend <- function(mat_x_trend, mat_capSigma_trend){
+    mat_capF <- t(mat_x_trend) %*% solve(mat_capSigma_trend) %*% mat_x_trend
+    return(mat_capF)
+}
+cal_vec_h_trend <- function(mat_x_trend, mat_capSigma_trend, vec_y_trend){
+    mat_h <- t(mat_x_trend) %*% solve(mat_capSigma_trend) %*% vec_y_trend
+    return(mat_h)
+}
+cal_vec_theta.hat_trend <- function(mat_x_trend, mat_capSigma_trend, vec_y_trend){
+    mat_capF <- cal_mat_capF_trend(mat_x_trend, mat_capSigma_trend)
+    mat_h <- cal_vec_h_trend(mat_x_trend, mat_capSigma_trend, vec_y_trend)
+    vec_theta.hat_trend <- solve(mat_capF) %*% mat_h
+    return(vec_theta.hat_trend)
+}
+cal_vec_intervalPred <- function(prob = 0.95, n, p, y.hat, var){
+    quantileStudentDist <- qt(p = 0.95, df = n - p)
+    boundUp <- y.hat + quantileStudentDist * sqrt(var)
+    boundLow <- y.hat - quantileStudentDist * sqrt(var)
+    return(list(boundUp = drop(boundUp), boundLow = drop(boundLow)))
+}
+cal_mat_intervalPred <- function(vec_l, prob = 0.95, n, p, vec_y.hat, vec_var){
+    vec_boundUp <- numeric(length(vec_l))
+    vec_boundLow <- numeric(length(vec_l))
+    for (i in seq(1, length(vec_l))){
+        interval <- cal_vec_intervalPred(prob, n, p, y.hat = vec_y.hat[i], var = vec_var[i])
+        vec_boundUp[i] <- interval$boundUp
+        vec_boundLow[i] <- interval$boundLow
+    }
+    return(list(vec_boundUp = vec_boundUp, vec_boundLow = vec_boundLow))
+}
+cal_vec_memoryTotal <- function(lambda, n){
+    vec_memoryTotal <- numeric(n)
+    vec_memoryTotal[1] <- 1
+    for (j in 1: (n-1)){
+     vec_memoryTotal[j+1] <- vec_memoryTotal[j] + lambda^j
+    }
+    return(vec_memoryTotal)
+}
+```
+
+Convergence of Total Memory of Local Trend Model
+
+```{r, fig.height = 5, fig.width = 10}
+n_trendL_1_6h <- n_6h
+lambda_trendL_1_6h <- 0.8
+vec_memoryTotal_1_6h <- cal_vec_memoryTotal(lambda= lambda_trendL_1_6h, n = n_trendL_1_6h)
+plot(seq(1, n_trendL_1_6h), vec_memoryTotal_1_6h, col = "blue",
+     main = paste("Convergence of Total Memory of Local Trend Model (", lambda_trendL_1_6h, 
+                  ") using 6h-sampling Data"), 
+     xlab = "Series", ylab = "Total Memory")
+```
+
+Define Functions for Linear Trend Model
+
+Use a local linear trend model on the outdoor temperature in the 6h training data using lambda = 0.8.
+
+y = theta0 + theta1 * j + epsilon
+
+Plot the training data and the corresponding one step predictions for all observations in the training data.
+
+```{r}
+func_f_linear <- function(j){
+    return(rbind(1, j))
+}
+pred_y_trend_linear <- function(l, vec_theta.hat_trend){
+    y_pred_trend <- t(func_f_linear(l)) %*% vec_theta.hat_trend
+    return(y_pred_trend)
+}
+pred_var_trend_linear <- function(l, mat_x_trend, vec_y_trend, vec_theta.hat_trend, mat_capSigma_trend){
+    sigma.hat <- cal_sigma.hat(mat_x = mat_x_trend, vec_y = vec_y_trend, 
+                           vec_theta.hat = vec_theta.hat_trend, mat_capSigma = mat_capSigma_trend)
+    mat_capF_trend_trend <- cal_mat_capF_trend(mat_x_trend, mat_capSigma_trend)
+    var_pred_trend <- sigma.hat^2 %*% (1 + t(func_f_linear(l)) %*% solve(mat_capF_trend_trend) %*% func_f_linear(l))
+    return(var_pred_trend)
+}
+pred_vec_y_trend_linear <- function(vec_l, vec_theta.hat_trend){
+    vec_y_trend_linear <- numeric(length(vec_l))
+    for (i in (1: length(vec_l))){
+        vec_y_trend_linear[i] <- pred_y_trend_linear(vec_l[i], vec_theta.hat_trend)
+    }
+    return(vec_y_trend_linear)
+}
+pred_vec_var_trend_linear <- function(vec_l, mat_x_trend, vec_y.pred_trend, vec_theta.hat_trend, mat_capSigma_trend){
+    vec_var_trend_linear <- numeric(length(vec_l))
+    for (i in (1: length(vec_l))){
+        vec_var_trend_linear[i] <- pred_var_trend_linear(vec_l[i], mat_x_trend, 
+                                                         vec_y.pred_trend[i], vec_theta.hat_trend, mat_capSigma_trend)
+    }
+    return(vec_var_trend_linear)
+}
+```
+
+### 1.3.1.1 Estimation
+
+Estimation
+
+```{r}
+mat_capSigma_trendL_1_6h <- do_mat_capSigma_trend(lambda = lambda_trendL_1_6h, n = n_trendL_1_6h)
+vec_y_trendL_1_6h <- dat.f_6h$tempExternal[1:n_6h]
+seq_zdi_trendL_1_6h <- do_seq_zeroDecreaseRev(n_trendL_1_6h)
+mat_x_trendL_1_6h <- cbind(1, seq_zdi_trendL_1_6h)
+vec_theta.hat_trendL_1_6h <- cal_vec_theta.hat_trend(mat_x_trend = mat_x_trendL_1_6h, 
+                                           mat_capSigma_trend = mat_capSigma_trendL_1_6h,
+                                           vec_y_trend = vec_y_trendL_1_6h)
+cal_mat_capF_trend(mat_x_trend = mat_x_trendL_1_6h, 
+                   mat_capSigma_trend = mat_capSigma_trendL_1_6h)
+cal_vec_h_trend(mat_x_trend = mat_x_trendL_1_6h, 
+                mat_capSigma_trend = mat_capSigma_trendL_1_6h,
+                vec_y_trend = vec_y_trendL_1_6h)
+sigma.hat_trendL_1_6h <- cal_sigma.hat(mat_x = mat_x_trendL_1_6h, vec_y = vec_y_trendL_1_6h, 
+                                       vec_theta.hat = vec_theta.hat_trendL_1_6h, 
+                                       mat_capSigma = mat_capSigma_trendL_1_6h)
+mat_var.theta.hat_trendL_1_6h <- cal_mat_var.theta.hat(mat_x = mat_x_trendL_1_6h, sigma.hat = sigma.hat_trendL_1_6h, 
+                                                       mat_capSigma = mat_capSigma_trendL_1_6h)
+```
+
+### 1.3.1.2 Prediction
+
+```{r}
+vec_y.hat_trendL_1_6h <- mat_x_trendL_1_6h %*% vec_theta.hat_trendL_1_6h
+vec_l_trendL_1_6h <- c(1, 2, 3, 4)
+vec_y.pred_trendL_1_6h <- pred_vec_y_trend_linear(vec_l = vec_l_trendL_1_6h, 
+                                                     vec_theta.hat_trend = vec_theta.hat_trendL_1_6h)
+vec_var.pred_trendL_1_6h <- pred_vec_var_trend_linear(vec_l = vec_l_trendL_1_6h, 
+                                                         mat_x_trend = mat_x_trendL_1_6h, 
+                                                         mat_capSigma_trend = mat_capSigma_trendL_1_6h, 
+                                                         vec_y.pred_trend = vec_y.pred_trendL_1_6h,
+                                                         vec_theta.hat_trend = vec_theta.hat_trendL_1_6h)
+mat_intervaPred_trendL_1_6h <- cal_mat_intervalPred(vec_l = vec_l_trendL_1_6h, prob = 0.95, 
+                                                    n = n_trendL_1_6h, p = length(vec_theta.hat_trendL_1_6h), 
+                                                    vec_y.hat = vec_y.pred_trendL_1_6h, 
+                                                    vec_var = vec_var.pred_trendL_1_6h)
+```
+
+### 1.3.1.4
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+plot(dat.f_6h$series[1:n_6h], dat.f_6h$tempExternal[1:n_6h], 
+     type = "b", col = "blue", lwd = 1, lty = 1, xlim = c(0, n_6h + 4), ylim = c(-4, 12),
+     main = paste("Prediction of External Temperature by Linear Local Trend Model (", lambda_trendL_1_6h, 
+                  ") using 6h Data"), 
+     xlab = "Series", ylab = "Celsius Degree")
+points(n_trendL_1_6h + seq(4), dat.f_6h$tempExternal[(n_trendL_1_6h+1): (n_trendL_1_6h+4)], 
+       type = "b", col = "blue", lty = 1, pch = 16)
+lines(dat.f_6h$series[(n_6h):(n_6h+1)], dat.f_6h$tempExternal[(n_6h):(n_6h+1)], 
+      type = "c", col = "blue", lty = 1)
+legend("bottomleft", inset = .02, legend = c("Training Data", "Testing Data", "Trend Model", 
+                                             "Prediction", "Pred Interval"), 
+       col = c("blue", "blue", "red", "red", "red"), pch = c(1, 16, NA, 15, 6), 
+       lty = c(1, 1, 2, 3, 1), lwd = c(1, 1, 3, 3, 1))
+# Plot the validation result
+lines(dat.f_6h$series[1:n_6h], vec_y.hat_trendL_1_6h, 
+      type = "l", col = "red", lty = 2, lwd = 3)
+# Plot the prediction result
+points(n_trendL_1_6h + vec_l_trendL_1_6h, vec_y.pred_trendL_1_6h, 
+       type = "b", col = "red", pch = 15, lty = 3, lwd = 2)
+lines(n_trendL_1_6h + vec_l_trendL_1_6h, mat_intervaPred_trendL_1_6h$vec_boundUp, 
+      type = "b", col = 'red', lwd = 1, lty = 1, pch = 6, cex= 0.5)
+
+lines(n_trendL_1_6h + vec_l_trendL_1_6h, mat_intervaPred_trendL_1_6h$vec_boundLow, 
+      type = "b", col = 'red', lwd = 1, lty = 1, pch = 2, cex= 0.5)
+```
+
+
+## 3.2,  Quadratic Local Trend Model (lambda = 0.8) of 6h-sampling Data
+
+y = theta0 + theta1 \* j + theta2 \* j^2/2 + epsilon
+
+Define Functions for Quadratic Local Trend Model
+
+```{r}
+func_f_quadratic <- function(j){
+    return(rbind(1, j, j^2 / 2))
+}
+pred_y_trend_quadratic <- function(l, vec_theta.hat_trend){
+    y_pred_trend <- t(func_f_quadratic(l)) %*% vec_theta.hat_trend
+    return(y_pred_trend)
+}
+pred_vec_y_trend_quadratic <- function(vec_l, vec_theta.hat_trend){
+    vec_y.pred_trend_quadratic <- numeric(length(vec_l))
+    for (i in seq(1, length(vec_l))){
+        vec_y.pred_trend_quadratic[i] <- pred_y_trend_quadratic(vec_l[i], vec_theta.hat_trend)
+    }
+    return(vec_y.pred_trend_quadratic)
+}
+pred_var_trend_quadratic <- function(l, mat_x_trend, vec_y_trend, vec_theta.hat_trend, mat_capSigma_trend){
+    sigma.hat <- cal_sigma.hat(mat_x = mat_x_trend, vec_y = vec_y_trend, 
+                           vec_theta.hat = vec_theta.hat_trend, mat_capSigma = mat_capSigma_trend)
+    mat_capF_trend_trend <- cal_mat_capF_trend(mat_x_trend, mat_capSigma_trend)
+    var.pred_trend <- sigma.hat^2 %*% (1 + t(func_f_quadratic(l)) %*% solve(mat_capF_trend_trend) %*% func_f_quadratic(l))
+    return(var.pred_trend)
+}
+pred_vec_var_trend_quadratic <- function(vec_l, mat_x_trend, vec_y.pred_trend, vec_theta.hat_trend, mat_capSigma_trend){
+    vec_var.pred_trend_quadratic <- numeric(length(vec_l))
+    for (i in seq(1, length(vec_l))){
+        vec_var.pred_trend_quadratic[i] <- pred_var_trend_quadratic(vec_l[i], 
+                                                                    mat_x_trend, 
+                                                                    vec_y.pred_trend[i], 
+                                                                    vec_theta.hat_trend, 
+                                                                    mat_capSigma_trend)
+    }
+    return(vec_var.pred_trend_quadratic)
+}
+```
+
+```{r}
+n_trendL_2_6h <- n_6h
+lambda_trendL_2_6h <- 0.8
+mat_capSigma_trendL_2_6h <- do_mat_capSigma_trend(lambda = lambda_trendL_2_6h, n = n_trendL_2_6h)
+vec_y_trendL_2_6h <- dat.f_6h$tempExternal[1: n_trendL_2_6h]
+seq_zdi_trendL_2_6h <- do_seq_zeroDecreaseRev(n_trendL_2_6h)
+mat_x_trendL_2_6h <- cbind(1, seq_zdi_trendL_2_6h, seq_zdi_trendL_2_6h^2 / 2)
+vec_theta.hat_trendL_2_6h <- cal_vec_theta.hat_trend(mat_x_trend = mat_x_trendL_2_6h, 
+                                             mat_capSigma_trend = mat_capSigma_trendL_2_6h,
+                                             vec_y_trend = vec_y_trendL_2_6h)
+sigma.hat_trendL_2_6h <- cal_sigma.hat(mat_x = mat_x_trendL_2_6h, vec_y = vec_y_trendL_2_6h, 
+                                       vec_theta.hat = vec_theta.hat_trendL_2_6h, 
+                                       mat_capSigma = mat_capSigma_trendL_2_6h)
+mat_var.theta.hat_trendL_2_6h <- cal_mat_var.theta.hat(mat_x = mat_x_trendL_2_6h, sigma.hat = sigma.hat_trendL_2_6h, 
+                                                       mat_capSigma = mat_capSigma_trendL_2_6h)
+```
+
+Validate
+
+```{r}
+vec_y.hat_trendL_2_6h <- mat_x_trendL_2_6h %*% vec_theta.hat_trendL_2_6h
+vec_sse.hat_trendL_2_6h <- cal_vec_sse.hat(mat_x = mat_x_trendL_2_6h, 
+                                           vec_y = vec_y_trendL_2_6h, 
+                                           vec_theta.hat = vec_theta.hat_trendL_2_6h, 
+                                           mat_capSigma = mat_capSigma_trendL_2_6h)
+mat_intervaConf_trendL_2_6h <- cal_mat_intervalConf(prob = 0.95, 
+                                                    mat_x = mat_x_trendL_2_6h, 
+                                                    vec_theta.hat = vec_theta.hat_trendL_2_6h, 
+                                                    vec_y = vec_y_trendL_2_6h)
+```
+
+Predict
+
+```{r}
+vec_l_trendL_2_6h <- c(1, 2, 3, 4)
+vec_y.pred_trendL_2_6h <- pred_vec_y_trend_quadratic(vec_l = vec_l_trendL_2_6h, 
+                                                     vec_theta.hat_trend = vec_theta.hat_trendL_2_6h)
+vec_var.pred_trendL_2_6h <- pred_vec_var_trend_quadratic(vec_l = vec_l_trendL_2_6h, 
+                                                         mat_x_trend = mat_x_trendL_2_6h, 
+                                                         mat_capSigma_trend = mat_capSigma_trendL_2_6h, 
+                                                         vec_y.pred_trend = vec_y.pred_trendL_2_6h,
+                                                         vec_theta.hat_trend = vec_theta.hat_trendL_2_6h)
+mat_intervaPred_trendL_2_6h <- cal_mat_intervalPred(vec_l = vec_l_trendL_2_6h, prob = 0.95, 
+                                                    n = n_trendL_2_6h, p = length(vec_theta.hat_trendL_2_6h), 
+                                                    vec_y.hat = vec_y.pred_trendL_2_6h, 
+                                                    vec_var = vec_var.pred_trendL_2_6h)
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+plot(dat.f_6h$series[1:n_6h], dat.f_6h$tempExternal[1:n_6h], 
+     type = "b", col = "blue", lwd = 1, lty = 1, xlim = c(0, n_6h + 4), ylim = c(-4, 12),
+     main = paste("Prediction of External Temperature by Quadratic Local Trend Model (", lambda_trendL_2_6h, 
+                  ") using 6h Data"), 
+     xlab = "Series", ylab = "Celsius Degree")
+points(n_trendL_2_6h + seq(4), dat.f_6h$tempExternal[(n_trendL_2_6h+1): (n_trendL_2_6h+4)], 
+       type = "b", col = "blue", lty = 1, pch = 16)
+lines(dat.f_6h$series[(n_6h):(n_6h+1)], dat.f_6h$tempExternal[(n_6h):(n_6h+1)], 
+      type = "c", col = "blue", lty = 1)
+# Plot the validation result
+lines(dat.f_6h$series[1:n_6h], vec_y.hat_trendL_2_6h, type = "l", col = "red", lty = 2, lwd = 3)
+# lines(dat.f_6h$series[1:n_6h], mat_intervaConf_trendL_2_6h$vec_boundUp, type = 'l', col = "red", lty = 3, lwd = 2)
+# lines(dat.f_6h$series[1:n_6h], mat_intervaConf_trendL_2_6h$vec_boundLow, type = 'l', col = "red", lty = 3, lwd = 2)
+# Plot the prediction result
+points(n_trendL_2_6h + vec_l_trendL_2_6h, vec_y.pred_trendL_2_6h, 
+       type = "b", col = "red", pch = 15, lty = 3, lwd = 2)
+lines(n_trendL_2_6h + vec_l_trendL_2_6h, mat_intervaPred_trendL_2_6h$vec_boundUp, 
+      type = "b", col = 'red', lwd = 1, lty = 1, pch = 6, cex= 0.5)
+lines(n_trendL_2_6h + vec_l_trendL_2_6h, mat_intervaPred_trendL_2_6h$vec_boundLow, 
+      type = "b", col = 'red', lwd = 1, lty = 1, pch = 2, cex= 0.5)
+legend("bottomleft", inset = .02, legend = c("Training Data", "Testing Data", "Trend Model", 
+                                             "Prediction", "Pred Interval"), 
+       col = c("blue", "blue", "red", "red", "red"), pch = c(1, 16, NA, 15, 6), 
+       lty = c(1, 1, 2, 3, 1), lwd = c(1, 1, 3, 3, 1))
+```
+
+# Question 4
+
+Trend Component of Solar Irradiation
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+library(forecast)
+ts_trend_iSolar = ma(dat.f_6h$iSolar[1: n_6h], order = 4, centre = T)
+plot(dat.f_6h$series[1: n_6h], dat.f_6h$iSolar[1: n_6h], type = "l", col = "blue", lty = 1, lwd = 2, 
+     main = "Trend Component of Solar Irradiation", xlab = "Series", ylab = "W / m2")
+lines(dat.f_6h$series[1: n_6h], ts_trend_iSolar, col = "red", lty = 2, lwd = 2)
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+ts_detrend_iSolar = dat.f_6h$iSolar[1: n_6h] / ts_trend_iSolar
+plot(dat.f_6h$series[1: n_6h], ts_detrend_iSolar, type = "l", col = "blue", lty = 1, lwd = 2, 
+     main = "Seasonal Component of Solar Irradiation", xlab = "Series", ylab = "W / m2")
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+mat_iSolar = t(matrix(data = ts_detrend_iSolar, nrow = 4))
+vec_season_iSolar = colMeans(mat_iSolar, na.rm = T)
+plot(rep(vec_season_iSolar, 9), type = "l", col = "blue", lty = 1, lwd = 2, 
+     main = "Averaged Seasonal Component of Solar Irradiation", xlab = "Series", ylab = "W / m2")
+```
+
+```{r, warning=FALSE, fig.height = 5, fig.width = 10}
+ts_epsilon_iSolar = dat.f_6h$iSolar[1: n_6h] / (ts_trend_iSolar * vec_season_iSolar)
+plot(ts_epsilon_iSolar, type = "l", col = "blue", lty = 1, lwd = 2, 
+     main = "Epsilon Component of Solar Irradiation", xlab = "Series", ylab = "W / m2")
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+ts_recomposed_iSolar = ts_trend_iSolar * vec_season_iSolar * ts_epsilon_iSolar
+plot(dat.f_6h$series[1: n_6h], ts_recomposed_iSolar, type = "l", col = "red", lty = 2, lwd = 3, 
+     main = "Recomposed Solar Irradiation and Original Data", xlab = "Series", ylab = "W / m2")
+lines(dat.f_6h$series[1: n_6h], dat.f_6h$iSolar[1: n_6h], col = "blue", lty = 1, lwd = 1)
+```
+
+Predict the solar irradiation in the last day
+
+```{r}
+n_trendL_3_6h <- n_6h - 4
+lambda_trendL_3_6h <- 0.8
+mat_capSigma_trendL_3_6h <- do_mat_capSigma_trend(lambda = lambda_trendL_3_6h, n = n_trendL_3_6h)
+vec_y_trendL_3_6h <- as.numeric(ts_trend_iSolar)[3: 36]
+seq_zdi_trendL_3_6h <- do_seq_zeroDecreaseRev(n_trendL_3_6h)
+mat_x_trendL_3_6h <- cbind(1, seq_zdi_trendL_3_6h, seq_zdi_trendL_3_6h^2 / 2)
+vec_theta.hat_trendL_3_6h <- cal_vec_theta.hat_trend(mat_x_trend = mat_x_trendL_3_6h, 
+                                                     mat_capSigma_trend = mat_capSigma_trendL_3_6h,
+                                                     vec_y_trend = vec_y_trendL_3_6h)
+sigma.hat_trendL_3_6h <- cal_sigma.hat(mat_x = mat_x_trendL_3_6h, 
+                                       vec_y = vec_y_trendL_3_6h, 
+                                       vec_theta.hat = vec_theta.hat_trendL_3_6h, 
+                                       mat_capSigma = mat_capSigma_trendL_3_6h)
+mat_var.theta.hat_trendL_3_6h <- cal_mat_var.theta.hat(mat_x = mat_x_trendL_3_6h, 
+                                                       sigma.hat = sigma.hat_trendL_3_6h, 
+                                                       mat_capSigma = mat_capSigma_trendL_3_6h)
+```
+
+```{r}
+vec_y.hat_trendL_3_6h <- mat_x_trendL_3_6h %*% vec_theta.hat_trendL_3_6h
+```
+
+
+```{r}
+vec_l_trendL_3_6h <- c(3, 4, 5, 6)
+vec_y.pred_trendL_3_6h <- pred_vec_y_trend_quadratic(vec_l = vec_l_trendL_3_6h, 
+                                                     vec_theta.hat_trend = vec_theta.hat_trendL_3_6h)
+vec_y.pred_trendL_3_6h[1] <- vec_y.pred_trendL_3_6h[1] * vec_season_iSolar[3]
+vec_y.pred_trendL_3_6h[2] <- vec_y.pred_trendL_3_6h[2] * vec_season_iSolar[4]
+vec_y.pred_trendL_3_6h[3] <- vec_y.pred_trendL_3_6h[3] * vec_season_iSolar[1]
+vec_y.pred_trendL_3_6h[4] <- vec_y.pred_trendL_3_6h[4] * vec_season_iSolar[2]
+vec_var.pred_trendL_3_6h <- pred_vec_var_trend_quadratic(vec_l = vec_l_trendL_3_6h, 
+                                                         mat_x_trend = mat_x_trendL_3_6h, 
+                                                         mat_capSigma_trend = mat_capSigma_trendL_3_6h, 
+                                                         vec_y.pred_trend = vec_y.pred_trendL_3_6h,
+                                                         vec_theta.hat_trend = vec_theta.hat_trendL_3_6h)
+mat_intervaPred_trendL_3_6h <- cal_mat_intervalPred(vec_l = vec_l_trendL_3_6h, 
+                                                    prob = 0.95, 
+                                                    n = n_trendL_3_6h, 
+                                                    p = length(vec_theta.hat_trendL_3_6h), 
+                                                    vec_y.hat = vec_y.pred_trendL_3_6h, 
+                                                    vec_var = vec_var.pred_trendL_3_6h)
+mat_intervaPred_trendL_3_6h$vec_boundUp[1] <- mat_intervaPred_trendL_3_6h$vec_boundUp[1] * vec_season_iSolar[3]
+mat_intervaPred_trendL_3_6h$vec_boundUp[2] <- mat_intervaPred_trendL_3_6h$vec_boundUp[2] * vec_season_iSolar[4]
+mat_intervaPred_trendL_3_6h$vec_boundUp[3] <- mat_intervaPred_trendL_3_6h$vec_boundUp[3] * vec_season_iSolar[1]
+mat_intervaPred_trendL_3_6h$vec_boundUp[4] <- mat_intervaPred_trendL_3_6h$vec_boundUp[4] * vec_season_iSolar[2]
+mat_intervaPred_trendL_3_6h$vec_boundLow[1] <- mat_intervaPred_trendL_3_6h$vec_boundLow[1] * vec_season_iSolar[3]
+mat_intervaPred_trendL_3_6h$vec_boundLow[2] <- mat_intervaPred_trendL_3_6h$vec_boundLow[2] * vec_season_iSolar[4]
+mat_intervaPred_trendL_3_6h$vec_boundLow[3] <- mat_intervaPred_trendL_3_6h$vec_boundLow[3] * vec_season_iSolar[1]
+mat_intervaPred_trendL_3_6h$vec_boundLow[4] <- mat_intervaPred_trendL_3_6h$vec_boundLow[4] * vec_season_iSolar[2]
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+plot(dat.f_6h$series[1:n_6h], dat.f_6h$iSolar[1:n_6h], 
+     type = "b", col = "blue", lwd = 1, lty = 1, xlim = c(0, 42), ylim = c(0, 400),
+     main = paste("Prediction of Solar Irradiation by Seasonal Local Trend Model (", lambda_trendL_3_6h, 
+                  ") using 6h-sampling Data"), 
+     xlab = "Series", ylab = "Celsius Degree")
+lines(dat.f_6h$series[(n_6h+1):(n_6h+4)], dat.f_6h$iSolar[(n_6h+1):(n_6h+4)], 
+      type = "b", col = "blue", lwd = 1, lty = 1, pch = 16)
+lines(dat.f_6h$series[(n_6h):(n_6h+1)], dat.f_6h$iSolar[(n_6h):(n_6h+1)], 
+      type = "c", col = "blue", lwd = 1, lty = 1)
+# Plot the Validation Result
+lines(dat.f_6h$series[3: (n_6h-2)], vec_y.hat_trendL_3_6h, 
+      type = "l", col = "red", lty = 2, lwd = 3)
+# lines(ts_trend_iSolar * vec_season_iSolar, col = 'red', lty = 3, lwd = 2)
+# Plot the prediction Result
+lines(2 + n_trendL_3_6h + vec_l_trendL_3_6h, vec_y.pred_trendL_3_6h, 
+      type = "b", col = "red", pch = 15, lty = 3, lwd = 3)
+points(2 + n_trendL_3_6h + vec_l_trendL_3_6h, mat_intervaPred_trendL_3_6h$vec_boundUp, col = 'red', pch = 6, cex= 0.5)
+points(2 + n_trendL_3_6h + vec_l_trendL_3_6h, mat_intervaPred_trendL_3_6h$vec_boundLow, col = 'red', pch = 2, cex= 0.5)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data", "Trend Compo", "Prediction", "Pred Interval"), 
+       col = c("blue", "blue", "red", "red", "red"), pch = c(1, 16, NA, 15, 6), 
+       lty = c(1, 1, 2, 3, 1), lwd = c(1, 1, 3, 3, 1), cex = 0.8)
+```
+
+Predict the observations for the last day (test data) of the spatial heating based on the 6h data. For this, use the estimated model in question 1.2 and the outdoor temperature from question 1.3. 
+
+```{r}
+mat_x.pred_2_6h <- cbind(rep(1, 4), vec_y.pred_trendL_2_6h, vec_y.pred_trendL_3_6h) 
+vec_y.pred_2_6h  <- mat_x.pred_2_6h %*% vec_theta.hat_expDecay_6h
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+plot(dat.f_6h$series[1:(n_6h)], dat.f_6h$heating[1:(n_6h)], 
+     type = "b", col = "blue", lwd = 1, lty = 1, xlim = c(0, 42),
+     main = "Predicted Heating in the last Day using 6h Data", xlab = "Series", ylab = "W")
+lines(dat.f_6h$series[(n_6h+1):(n_6h+4)], dat.f_6h$heating[(n_6h+1):(n_6h+4)], 
+      type = "b", col = "blue", lty = 1, pch = 16)
+lines(dat.f_6h$series[(n_6h):(n_6h+1)], dat.f_6h$heating[(n_6h):(n_6h+1)], 
+      type = "c", col = "blue", lty = 1)
+legend("topleft", inset = .02, legend = c("Training Data", "Testing Data", "Prediction"), col = c("blue", "blue", "red"), 
+       pch = c(1, 16, 15), lty = c(1, 1, 3), lwd = c(1, 1, 2), cex = 0.8)
+# Plot the prediction result
+lines(dat.f_6h$series[(n_6h+1):(n_6h+4)], vec_y.pred_2_6h, 
+      type = "b", col = "red", pch = 15, lty = 3, lwd = 2)
+```
+
+
+
+

@@ -1,0 +1,92 @@
+---
+title: "dtu02417a3: ARIMAX Model for Building Data"
+output: html_notebook
+author: Edward J. Xu (Jie Xu), s181238
+date: 17th April, 2019
+---
+
+```{r, include=FALSE}
+# Clear variables
+rm(list=ls())
+library(knitr)
+source('LinearStocSystem_EDXU.R')
+source("Data.R")
+```
+
+# ARIMA Model of Solar Irradiation
+
+```{r, warning=FALSE, fig.height = 6, fig.width = 11}
+plotTimeSeries(dat.f$iSolar[1: num_obs], num_lag = 100, "Solar Irradiation")
+```
+
+```{r, eval=FALSE}
+setEPS()
+postscript("19.eps", width = 11, height = 6)
+plotTimeSeries(dat.f$iSolar[1: num_obs], num_lag = 100, "Solar Irradiation")
+dev.off()
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1 <- arima(dat.f$iSolar[1: num_obs], order = c(0, 0, 0), seasonal = list(order = c(0, 0, 1), period = 48), include.mean = TRUE)
+mod_1
+plotTimeSeriesResidual(mod_1, num_lag = 100, "ARIMA Model 1 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_2 <- arima(dat.f$iSolar[1: num_obs], order = c(0, 1, 0), include.mean = TRUE)
+mod_2
+plotTimeSeriesResidual(mod_2, num_lag = 100, "ARIMA Model 2 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1.1 <- arima(mod_1$residuals, order = c(4, 0, 0), include.mean = F)
+mod_1.1
+plotTimeSeriesResidual(mod_1.1, num_lag = 100, "ARIMA Model 1.1 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_2.1 <- arima(mod_2$residuals, order = c(0, 0, 3), include.mean = F)
+mod_2.1
+plotTimeSeriesResidual(mod_2.1, num_lag = 100, "ARIMA Model 2.1 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_2.2 <- arima(mod_2$residuals, order = c(3, 0, 0), include.mean = F)
+mod_2.2
+plotTimeSeriesResidual(mod_2.1, num_lag = 100, "ARIMA Model 2.2 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1.1.1 <- arima(mod_1.1$residuals, order = c(0, 0, 0), seasonal = list(order = c(1, 0, 0), period = 48), 
+                   include.mean = F)
+mod_1.1.1
+plotTimeSeriesResidual(mod_1.1.1, num_lag = 100, "ARIMA Model 1.1.1 of Solar Irradiation")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1.1.2 <- arima(mod_1.1$residuals, order = c(0, 0, 0), seasonal = list(order = c(0, 0, 2), period = 48), 
+                   include.mean = F)
+mod_1.1.2
+plotTimeSeriesResidual(mod_1.1.2, num_lag = 100, "ARIMA Model 1.1.2 of Solar Irradiation")
+```
+
+```{r}
+setEPS()
+postscript("9.eps", width = 11, height = 12)
+plotTimeSeriesResidual(mod_1.1.2, num_lag = 100, "ARIMA Model 1.1.2 of Solar Irradiation")
+dev.off()
+```
+
+```{r}
+mod_1.1.2 <- arima(dat.f$iSolar[1: num_obs], order = c(4, 1, 0), seasonal = list(order = c(0, 0, 2), period = 48), 
+    include.mean = T)
+mod_1.1.1 <- arima(dat.f$iSolar[1: num_obs], order = c(4, 1, 0), seasonal = list(order = c(0, 0, 1), period = 48), 
+    include.mean = T)
+table <- testModel(list(mod_1.1.2, mod_1.1.1), 
+                   c("od_1.1.2", "mod_1.1.1"))
+kable(table, col.names = c('Name', 'Type', 'Coefficients', 'AIC', 'LogLikRatio Test', 'F-Dist Test'), 
+      caption = 'Comparison Between Different Model for Heating', align = "l")
+```
+
+
+
