@@ -2,7 +2,7 @@
 # Edward J. Xu
 # Aug 26, 2019
 
-#' Root Mean Squared Error RMSE
+#' Root Mean Squared Error (RMSE) of One Prediction
 #'   Because we don't count the NA value in the following calculation,
 #'   the length of the vec_pred must minus the NA prediction.
 #'   Usually, there is no NA in prediction.
@@ -45,3 +45,6 @@ crossvalid <- function(datf, num_fold = 10){
     aveRootMeanSquaredError <- sum(vecRootMeanSquaredError) / num_fold
     return(aveRootMeanSquaredError)
 }
+
+
+if(!is.matrix(x)) stop("x must be a matrix")
