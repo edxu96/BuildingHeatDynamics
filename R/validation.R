@@ -6,7 +6,7 @@
 #' @param vec_resi vector of residuals
 #' @param vec_in vector of input
 plot_resi <- function(vec_resi, vec_in){
-  par(mfrow = c(2, 2))
+  par(mfrow = c(5, 1))
   ## Plot residuals
   plot(vec_resi)
   ## Residuals vs. input Te: There shouldn't be any relation
@@ -16,13 +16,12 @@ plot_resi <- function(vec_resi, vec_in){
   hist(vec_resi)
   qqnorm(vec_resi)
   qqline(vec_resi)
+
+  acf(vec_resi)
 }
 
-## And of course ACF
-par(mfrow = c(1,1))
-acf(fit_winter$residuals)
 
 ## Another great plot to check residuals
-df_x$residuals <- NA
-df_x$residuals[ival] <- fit$residuals
-pairs(df_x[c("residuals","t","Te")], panel = panel.smooth, lower.panel = NULL)
+# df_x$residuals <- NA
+# df_x$residuals[ival] <- fit$residuals
+# pairs(df_x[c("residuals","t","Te")], panel = panel.smooth, lower.panel = NULL)

@@ -10,3 +10,4 @@ Description: Multivariate Time Series Analysis in Matrix
 License: MIT
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.1
