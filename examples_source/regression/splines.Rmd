@@ -1,0 +1,36 @@
+---
+title: "Splines for Nonparametric Regression"
+output: html_notebook
+---
+
+Try to vary the degrees of freedom (df). What happens to the base splines generated?
+
+Try to vary the degree (degree). What happens to the base splines generated?
+
+Give the knot points directly (using the knots argument). Give the knots as the quantiles of x, what happens when degree = 1 and what happens when degree = 3? (exactly how the base splines are generated when degree > 1 is left out of scope of the exercise, just think about that it is done using some "optimal" procedure).
+
+Try with some non-equidistant x sequence, such that the quantiles are not equidis- tant. What happens with the base splines?
+
+## 2, calculate the base splines as a function of the external temperature. 
+And then use them as input to a linear regression model
+
+```{r}
+rm(list = ls())
+library(splines)
+datf <- readRDS("~/GitHub/MatrixTSA/data/soenderborg_2day.RDS")
+```
+
+```{r}
+df <- 7
+temp_ext_bs <- bs(df_x$Te, df = df, degree = 3, intercept = TRUE)[ , ]
+plot_bs(df_x$Te, temp_ext_bs)
+knots <- quantile(df_x$Te, probs = seq(0, 1, by = 1 / (df - 1)))
+abline(v = knots)
+```
+
+```{r}
+fit_bs(datf = df_x, df = 3, whe_intercept = FALSE)
+fit_bs(datf = df_x, df = 10, whe_intercept = FALSE)
+fit_bs(datf = df_x, df = 3, whe_intercept = TRUE)
+fit_bs(datf = df_x, df = 10, whe_intercept = TRUE)
+```
