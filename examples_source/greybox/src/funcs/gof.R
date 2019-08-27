@@ -1,4 +1,0 @@
-gof <- function()
-  {
-    graphics.off()
-  }
