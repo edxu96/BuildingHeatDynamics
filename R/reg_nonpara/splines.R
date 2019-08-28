@@ -1,45 +1,27 @@
 
 
-#' Fit a Base Splines Regression Model
+#' Fit a Splines Regression Model
 #'
-#' @param datf dataframe
-#' @return linear regression model
+#' @param li List with x and y.
+#' @return Linear regression model
 #' @export
-reg_bsplines <- function(datf, df, whe_intercept=TRUE){
-    if (whe_intercept) {
-        lm <- lm(P ~ 0 + bs(Te, df=4, intercept=TRUE), df_x)
-    }
-    else {
-        lm <- lm(P ~ bs(Te, df = df), datf)
-    }
-    seq_x <- seq(min(df_x$Te), max(df_x$Te), len = 100)
-    seq_y <- predict(lm, newdata = data.frame(Te = seq_x))
-    plot(df_x$Te, df_x$P)
-    ## We need to use predict to see the estimated function
-    lines(seq_x, seq_y, col = 2)
-    return(lm)
+reg_splines <- function(li, df = 2, degree = 1, whe_intercept=TRUE){
+  if (length(li$x) != lenght(li$y)) {
+    stop("length(li$x) != lenght(li$y)")
+  } else {
+    li$mod <- lm(
+      y ~ bs(x, df = df, degree = degree, intercept = whe_intercept), li
+      )
+  }
+  return(li)
 }
 
-plot_bs <- function(x, x_bs){
-    ## Merge them with x
-    df_x <- data.frame(x, x_bs)
-    names(df_x) <- c("x", paste0("bs", 1: (ncol(df_x) - 1)))
-    ## Plot
-    icol <- grep("^bs", names(df_x))
-    plot(df_x$x, df_x$bs1, type="n", ylim=range(df_x[ ,icol]))
-    for(i in icol){
-        lines(df_x$x, df_x[ ,i], col = i)
-    }
-}
-
-#' Regression using Base Splines
-reg_bs <- function(datf, df){
-  lm <- lm(P ~ bs(Te, df = df), datf)
-
-  seq_x <- seq(min(df_x$Te), max(df_x$Te), len = 100)
-  seq_y <- predict(fit, newdata = data.frame(Te = seq_x))
-  plot(df_x$Te, df_x$P)
-  ## We need to use predict to see the estimated function
-  lines(seq_x, seq_y)
-  return(lm)
+#' Plot the Fitted Splines Regression Model
+#'
+#' @param li Fittted spline regression model
+plot_splines <- function(li){
+  seq_x <- seq(min(li$x), max(li$x), len = 100)
+  seq_y <- predict(li$mod, newdata = data.frame(x = seq_x))
+  plot(li$x, li$y, bty = "n")
+  lines(seq_x, seq_y, col = 2)
 }
