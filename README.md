@@ -1,37 +1,12 @@
-# StructDynamics: Multivariate Regression of System Dynamics in Matrix
+# StructDynamics: Multivariate Regression of System Dynamics in Struct
 
 ![](./images/tangram_1.png)
 
 ## Introduction
 
-```
-struct
-    history
-        training set
-        validation set
-    loss function
-    model
-    param
-    input
-    prediction
-function
-optimizer
-data
-```
+For those who are not statisticians, like economists and traders, a well-established collections of statistical tools is needed, and this package is my toolbox to model dynamics in renewable energy systems and markets.
 
-__Regression Model__
-
-1. Model
-2. State Space Model
-    - Non-Linear State Space Model
-    - Linear State Space Model
-3. Generalized Additive Model
-4. Generalized Linear Model
-5. Tree-Based Method
-
-__Unsupervised Learning__
-
-Clustering
+> R packages are (after a short learning phase) a comfortable way to maintain collections of R functions and data sets. As an article distributes scientific ideas to others, a package distributes statistical methodology to others. Most users first see the packages of functions distributed with R or from CRAN. The package system allows many more people to contribute to R while still enforcing some standards. But packages are also a convenient way to maintain private functions and share them with your colleagues. I have a private package of utility function, my working group has several “experimental” packages where we try out new things. This provides a transparent way of sharing code with co-workers, and the final transition from “playground” to production code is much easier. (["Creating R Packages: A Tutorial", Friedrich Leisch](https://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf))
 
 ## How to Use
 

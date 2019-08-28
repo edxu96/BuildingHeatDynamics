@@ -1,5 +1,14 @@
 
 
+setClass(
+   "CStruct2",
+   slots = list(
+        n = "numeric",
+        s = "character",
+        b = "logical"
+       )
+   )
+
 #' Fit a Splines Regression Model
 #'
 #' @param li List with x and y.
