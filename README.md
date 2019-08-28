@@ -1,8 +1,23 @@
-# MatrixDynamics: Multivariate Regression of System Dynamics in Matrix
+# StructDynamics: Multivariate Regression of System Dynamics in Matrix
 
 ![](./images/tangram_1.png)
 
 ## Introduction
+
+```
+struct
+    history
+        training set
+        validation set
+    loss function
+    model
+    param
+    input
+    prediction
+function
+optimizer
+data
+```
 
 __Regression Model__
 
@@ -34,6 +49,8 @@ mat_oi <- get_mat_oi(datf)
 - [ ] Generalized Linear Model
 
 ## When to Use
+
+Well-Defined Data from Physical Systems
 
 * Forecast -> Supervised Learning, High Accuracy
     - Stochastic Programming
