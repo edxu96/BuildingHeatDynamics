@@ -5,23 +5,20 @@
 library(testthat)
 library(MatrixTSA)
 
-# context("String length")
-# library(stringr)
-#
-# test_that("str_length is number of characters", {
-#   expect_equal(str_length("a"), 1)
-#   expect_equal(str_length("ab"), 2)
-#   expect_equal(str_length("abc"), 3)
-# })
-#
-# test_that("str_length of factor is length of level", {
-#   expect_equal(str_length(factor("a")), 1)
-#   expect_equal(str_length(factor("ab")), 2)
-#   expect_equal(str_length(factor("abc")), 3)
-# })
-#
-# test_that("str_length of missing is missing", {
-#   expect_equal(str_length(NA), NA_integer_)
-#   expect_equal(str_length(c(NA, 1)), c(NA, 1))
-#   expect_equal(str_length("NA"), 2)
-# })
+source("./tests/testthat/greybox.R")
+
+context("Grey-Box Modelling")
+
+test_main <- function(){
+  test_that("Test test_convert_expr", {
+    expr_new <- test_convert_expr()
+    expect_equal(expr_new, dTi ~ 1 / Ci * Ph * dt + exp(p11) * dw1)
+  })
+
+  test_that("Test set_mod_ctsm", {
+    str_result <- test_set_mod_ctsm()
+    expect_equal(str_result, "Pass")
+  })
+}
+
+test_main()
