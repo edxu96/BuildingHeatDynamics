@@ -4,12 +4,18 @@
 \alias{set_mod_ctsm}
 \title{Set a new CTSM model}
 \usage{
-set_mod_ctsm(c_expr_sys, expr_obs, expr_error, c_input, datf_para)
+set_mod_ctsm(c_expr_sys, expr_obs, expr_var, c_input, ti_est)
 }
 \arguments{
-\item{mat_bound}{Matrix of initial values and bounds for optimization}
+\item{c_expr_sys}{Vector of system expressions}
 
-\item{eval_input}{Evaluation to add input to the model}
+\item{expr_obs}{Observation expressions}
+
+\item{expr_var}{Variance Expressions}
+
+\item{c_input}{Name of Input Variables}
+
+\item{datf_para}{Dataframe of estimated parameters}
 }
 \description{
 Set a new CTSM model

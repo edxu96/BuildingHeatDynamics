@@ -10,6 +10,14 @@ For those who are not statisticians, like economists and traders, a well-establi
 
 ## How to Use
 
+```
+install.packages(pkgs = MatrixTSA, repos = https://github.com/edxu96/MatrixTSA.git)
+```
+
+```
+> devtools::install_github("edxu96/MatrixTSA")
+```
+
 The input and output from observations of some dynamic process can always be combined to a matrix, which we call `mat_oi`. For outputs with uni-variate time series, there are only two columns in the matrix. For those with multivariate time series, it's convenient to see the data in matrix.
 
 ```

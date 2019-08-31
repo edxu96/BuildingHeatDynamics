@@ -2,10 +2,6 @@
 ## Edward J. Xu, edxu96@outlook.com
 ## Aug 30, 2019
 
-library(ctsmr)
-library(stringi)
-library(stringr)
-
 #' Convert the `d(x)` to `dx``
 d <- function(x) {
   return(
@@ -28,7 +24,6 @@ convert_expr <- function(expr) {
   )
 
   for (i in 2:length(li_expr$variables)) {
-
     whe_call <- is.call(li_expr$variables[[i]])
     if (whe_call) {
 
@@ -54,11 +49,14 @@ convert_expr <- function(expr) {
 }
 
 #' Set a new CTSM model
-#' @param mat_bound Matrix of initial values and bounds for optimization
-#' @param eval_input Evaluation to add input to the model
+#' @param c_expr_sys Vector of system expressions
+#' @param expr_obs Observation expressions
+#' @param expr_var Variance Expressions
+#' @param c_input Name of Input Variables
+#' @param datf_para Dataframe of estimated parameters
 #' @value New CTSM model
 #' @export
-set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_error, c_input, datf_para) {
+set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_var, c_input, ti_est) {
   ## Initialize a CTSM model
   mod <- ctsm$new()
 
@@ -66,7 +64,7 @@ set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_error, c_input, datf_para) {
   lapply(lapply(c_expr_sys, convert_expr), mod$addSystem)
 
   mod$addObs(expr_obs)
-  mod$setVariance(expr_error)
+  mod$setVariance(expr_var)
 
   ## Add input variables
   for (i in 1:length(c_input)) {
@@ -76,17 +74,27 @@ set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_error, c_input, datf_para) {
   }
 
   ## Add initial values and bounds for parameters estimation
-  for (i in 1:nrow(datf_para)) {
+  for (i in 1:nrow(ti_est)) {
     eval(parse(text = paste(
       "mod$setParameter(",
-      datf_para[i,]$name, " = c(init = ", datf_para[i,]$init,
-      ", lb = ", datf_para[i,]$lb, ", ub = ", datf_para[i,]$up, "))",
+      ti_est$name[i], " = c(init = ", as.character(ti_est$init[i]),
+      ", lb = ", as.character(ti_est$lb[i]),
+      ", ub = ", as.character(ti_est$up[i]), "))",
       sep = ""
       )))
   }
 
   return(mod)
 }
+
+#' Estimate the model using data
+#' @param mod CTMS Model
+#' @param ti_data Tibble of data
+#' @export
+est_mod_ctsm <- function(mod, ti_data){
+  return(mod$estimate(as.data.frame(ti_data)))
+}
+
 
 
 
