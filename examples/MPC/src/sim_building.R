@@ -2,7 +2,7 @@
 library(scales)
 library(lpSolve)
 
-sim_building_mpc <- function(li_mat_ss, li_mat_ss_d, ti){
+sim_building <- function(li_mat_ss, li_mat_ss_d, ti){
 
   # Change from air heating to floor heating
   altB <- li_mat_ss$b

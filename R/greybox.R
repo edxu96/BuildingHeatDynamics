@@ -14,6 +14,7 @@ d <- function(x) {
 }
 
 #' Convert the standard expression to that for CTSM
+#' @importFrom stringi stri_paste
 convert_expr <- function(expr) {
   li_expr <- attributes(terms(expr))
   chr_expr <- stri_paste(
@@ -55,6 +56,7 @@ convert_expr <- function(expr) {
 #' @param c_input Name of Input Variables
 #' @param datf_para Dataframe of estimated parameters
 #' @value New CTSM model
+#' @import ctsmr
 #' @export
 set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_var, c_input, ti_est) {
   ## Initialize a CTSM model
@@ -90,6 +92,7 @@ set_mod_ctsm <- function(c_expr_sys, expr_obs, expr_var, c_input, ti_est) {
 #' Estimate the model using data
 #' @param mod CTMS Model
 #' @param ti_data Tibble of data
+#' @import ctsmr
 #' @export
 est_mod_ctsm <- function(mod, ti_data){
   return(mod$estimate(as.data.frame(ti_data)))

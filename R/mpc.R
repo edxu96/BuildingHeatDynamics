@@ -4,6 +4,7 @@
 
 #' Transform the CTSM model to state space model
 #' @param mod_ctsm CTMS model to be tranformed
+#' @export
 trans_ctsm_ss <- function(mod_ctsm){
   Estimated <- list2env(as.list(mod_ctsm$xm))
 
@@ -33,6 +34,8 @@ trans_ctsm_ss <- function(mod_ctsm){
 #' discerete state space model.
 #' @param li_mat_ss List of matrix for continuous state space model
 #' @param ti_data Tibble of data for estimation
+#' @import expm expm
+#' @export
 trans_mat_ss <- function(li_mat_ss, ti_data){
   dt <- diff(ti_data$t)[1] # all.equal(diff(diff(ti$t)),rep(0,length(ti$t)-2))
   ## Make sure that time steps are uniform
