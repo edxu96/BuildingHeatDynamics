@@ -49,7 +49,7 @@ ti <- ti %>%
   mutate(t = asHours(.$timedate - .$timedate[1]))
 ```
 
-# 2, Model using CTSM
+## 2, Model using CTSM
 
 ```{r}
 ti_est <- tibble(
@@ -74,20 +74,21 @@ li_mod[[1]] <- set_mod_ctsm(
 )
 ```
 
-# 3, Estimate the Model
+## 3, Estimate the Model
 
 ```{r}
 fit1 <- est_mod_ctsm(mod = li_mod[[1]], ti_data = ti)
 ```
 
-# 4, Get State Space Model
+## 4, Get State Space Model
 
 ```{r}
 li_mat_ss <- trans_ctsm_ss(fit1)
 li_mat_ss_d <- trans_mat_ss(li_mat_ss = li_mat_ss, ti_data = ti)
 ```
 
-# 5, Simulate the Control Process
+## 5, Simulate the Control Process
+
 ```{r}
 result <- sim_building(li_mat_ss, li_mat_ss_d, ti)
 Tall <- result$Tall
@@ -98,7 +99,8 @@ Tmax <- result$Tmax
 u <- result$u
 ```
 
-# 6, Plot the Result
+## 6, Plot the Result
+
 ```{r}
 plot(Tall[1, ], type = "l", ylim = c(Ymin - 0.5, Ymax + 0.5), ylab = "Air Temperature")
 lines(Tall[2, ], type = "s", col = alpha("blue", 0.4))
