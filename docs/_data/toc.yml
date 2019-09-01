@@ -17,14 +17,15 @@
 # - header: My Header  # Will insert a header with no link in the sidebar
 
 
-- title: Home
-  url: /intro
-  not_numbered: false
 - title: Search
   search: true
 
+- title: Home
+  url: /intro
+  not_numbered: false
+
 - title: Model Predictive Control
-  url: /mpc/01_overview
+  url: /mpc/intro
   not_numbered: false
   expand_sections: false
   # sections:
