@@ -1,4 +1,4 @@
-# StructDynamics: Multivariate Regression of System Dynamics in Struct
+# TidyDynamics: Multivariate Regression of System Dynamics in Struct
 
 ![](./images/tangram_1.png)
 
