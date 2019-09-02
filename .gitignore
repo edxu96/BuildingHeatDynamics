@@ -2,6 +2,7 @@
 data
 files
 examples_source
+backup
 
 # History files
 .Rhistory

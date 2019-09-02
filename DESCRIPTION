@@ -1,10 +1,10 @@
-Package: MatrixTSA
+Package: TidyDynamics
 Type: Package
-Title: Multivariate Time Series Analysis in Matrix
+Title: Multivariate Regression of System Dynamics Tidily
 Version: 0.1.0
 Author: Edward J. Xu
 Maintainer: Edward J. Xu <edxu96@outlook.com>
-Description: Multivariate Time Series Analysis in Matrix
+Description: Multivariate Regression of System Dynamics Tidily
     Regression: Local Regression
     Test
 License: MIT
@@ -15,7 +15,6 @@ Imports:
     ggplot2,
     expm,
     ctsmr,
-    stringi,
     stringr,
     tidyverse,
     magrittr
