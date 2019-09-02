@@ -43,6 +43,14 @@ The following categories of models will be included in this package.
 | Stochastic Diff. Eq.    | Dynamic          | Non-Linear          |
 | Tree-Based M.           | Static           | Non-Linear          |
 
+### Features
+
+- [x] TidyVerse Favored Grammar
+- [ ] Adaptivity
+- [ ] Based on Likelihood Theory
+- [ ] Matrix Computaiton
+- [ ] Functionals and Structs
+
 ## When to Use
 
 Well-Defined Data from Physical Systems
