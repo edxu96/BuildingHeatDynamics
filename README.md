@@ -3,7 +3,7 @@
 # TidyDynamics <a href='https://edxu96.github.io'><img src='./images/1.jpg' align="right" height="138.5" /></a>
 
 <!-- badges: start -->
-Multivariate Regression of System Dynamics Tidily
+Tidy Multivariate (Non)Linear Dynamic Systems
 <!-- badges: end -->
 
 ## Introduction
@@ -16,7 +16,7 @@ Modern statistics in R.
 
 > The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures. ([tidyverse](https://www.tidyverse.org))
 
-## How to Use
+## How to Install
 
 ```
 install.packages(pkgs = TidyDynamics, repos = https://github.com/edxu96/TidyDynamics.git)
@@ -28,22 +28,26 @@ install.packages(pkgs = TidyDynamics, repos = https://github.com/edxu96/TidyDyna
 
 The input and output from observations of some dynamic process can always be combined to a matrix, which we call `mat_oi`. For outputs with uni-variate time series, there are only two columns in the matrix. For those with multivariate time series, it's convenient to see the data in matrix.
 
-```
-mat_oi <- get_mat_oi(datf)
-```
+## How to Use
 
-## Underdevelopment
+The following categories of models will be included in this package.
 
-- [ ] Generalized Additive Model (Static Regression)
-- [ ] Time Series Analysis (ARIMA, ARIMAX)
-- [x] Grey-Box Modelling (Stochastic Differential Equation)
-- [ ] Tree-Based Method
+| Method                  | Static / Dynamic | Linear / Non-Linear |
+| ----------------------- | ---------------- | ------------------- |
+| Linear Regression       | Static           | Linear              |
+| Linear Additive Decomp. | Static           | Linear              |
+| Generalized Additive M. | Static           | Non-Linear          |
+| ARIMA (without input)   | Dynamic          | Linear              |
+| Input-Output Model      | Dynamic          | Linear              |
+| Linear State Space M.   | Dynamic          | Linear              |
+| Stochastic Diff. Eq.    | Dynamic          | Non-Linear          |
+| Tree-Based M.           | Static           | Non-Linear          |
 
 ## When to Use
 
 Well-Defined Data from Physical Systems
 
-* Forecast -> Supervised Learning, High Accuracy
+* Prediction -> Supervised Learning, High Accuracy
     - Stochastic Programming
     - Dynamic Programming
     - Model Predictive Control
@@ -52,10 +56,6 @@ Well-Defined Data from Physical Systems
 * Summarize -> Unsupervised Learning
     - Visualization
     - Group
-
-## When not to Use
-
-* Classification
 
 ## More Info
 
