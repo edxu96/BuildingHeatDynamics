@@ -1,50 +1,87 @@
 ---
-title: "Q1: Linear Regresson"
+title: "Simple Linear Regresson of Building Dynamics"
+author: Edward J. Xu (<edxu96@outlook.com>)
+date: Sept 1, 2019
 output: html_notebook
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r}
+```{r, include=FALSE}
 rm(list = ls())
-datf <- readRDS("~/GitHub/MatrixTSA/soenderborg_2day.RDS")
 ```
 
-# Linear Regression of Data in Winter Period
-
-## Set the summer period values to NA
-
-```{r}
-## Find the day of year for starting and ending summer
-as.POSIXlt("2011-06-01")$yday
-as.POSIXlt("2011-10-01")$yday
-## Find index of summer and set measurements to NA
-isummer <- 151 < as.POSIXlt(df_x$t)$yday & as.POSIXlt(df_x$t)$yday <= 273
-df_x[isummer, -1] <- NA
+```{r, results=FALSE}
+library(tidyverse)
+library(magrittr)
+library(MatrixTSA)
+library(forecast)
+options(tibble.width = Inf)
 ```
 
-## Simplest linear model
-
-```{r}
-fit_winter <- lm(P ~ Te, df_x)
-summary(fit_winter)
-plot(df_x$Te, df_x$P)  # relation between external temperature and heat load
-abline(fit_winter)
+```{r, results=FALSE}
+ti <- read_csv("~/GitHub/MatrixTSA/data/soenderborg_2day.csv")
+ti_winter <- filter(
+  ti,
+  as.POSIXlt("2011-06-01")$yday < as.POSIXlt(ti$t)$yday &
+  as.POSIXlt(ti$t)$yday <= as.POSIXlt("2011-10-01")$yday
+  )
+ti_winter
 ```
 
-## Model validation of Regression Model
+Get the data from house 3 during the winter in year 2011.
+
+# 1, Simple Linear Regression
+
+```{r, fig.width=6, fig.height=3}
+lm_winter_3 <- lm(P3 ~ Te, ti_winter)
+summary(lm_winter_3)
+```
+
+```{r, fig.align="center", fig.cap="Linear Reg of Heating Load (y) and Ext Temp (x) in Winter"}
+par(mfrow = c(2, 2))
+plot(lm_winter_3)
+```
+
+The P-values of coefficients for intercept and `Te` are sufficiently small, so  it's a good model. However, from the top-left diagram, we can say the residuals are not iid.
+
+```{r, fig.align="center", fig.cap="Linear Reg of Heating Load (y) and Ext Temp (x) in Entire Period"}
+lm_3 <- lm(P3 ~ Te, ti)
+summary(lm_3)
+```
 
 ```{r}
 par(mfrow = c(2, 2))
-## Plot residuals
-plot(fit_winter$residuals)
-## Residulas vs. input Te
-plot(df_x$Te[as.integer(names(fit_winter$residuals))], fit_winter$residuals)
-hist(fit_winter$residuals)
-qqnorm(fit_winter$residuals)
-qqline(fit_winter$residuals)
+plot(lm_3)
 ```
 
-```{r}
-par(mfrow = c(1,1))
-acf(fit_winter$residuals)
+When including the entire period, the span of the data is extended. There are more large residuals.
+
+```{r, fig.cap="ACF of Residuals from Linear Reg Model `lm_winter_3`"}
+forecast::ggtsdisplay(
+  lm_winter_3$residuals, lag.max = 30, 
+  main = "ACF and PACF of Residuals from `lm_winter_3`"
+  )
 ```
+
+```{r, fig.cap="ACF of Residuals from Linear Reg Model `lm_3`"}
+forecast::ggtsdisplay(
+  lm_3$residuals, lag.max = 30, 
+  main = "ACF and PACF of Residuals from `lm_winter_3`"
+  )
+```
+
+The residuals from `lm_winter_3` are more correlated with each other than those from `lm_3`. The heating loads in summer may cause the difference.
+
+# 2, Regression Splines
+
+```{r}
+li_splines <- reg_splines(
+  li = c(x = datf$Te, y = datf$P3),
+  df = 3, degree = 1, whe_intercept = T
+)
+
+plot_splines(li_splines)
+```
+
 

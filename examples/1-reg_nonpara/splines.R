@@ -1,16 +1,12 @@
 
-rm(ls = list())
+rm(list = ls())
 
-require(splines)
+library(splines)
+library()
 
 datf <- readRDS("./data/soenderborg_2day.RDS")
 
-li_splines <- reg_splines(
-  li = c(x = datf$Te, y = datf$P),
-  df = 3, degree = 1, whe_intercept = T
-)
 
-plot_splines(li_splines)
 
 ## ----Degrees of freedom (df)-----------------------------------
 ## Build a model using base splines

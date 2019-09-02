@@ -33,7 +33,7 @@ h.ci
 h.ci <- h.ci * 60^2 * 24 * 365.25 / 3.09e19 # convert to 1/years
 sort(1 / h.ci)
 
-## 1.5.1 ----
+#### 1.5.1 ####
 data(sperm.comp1)
 pairs(sperm.comp1[, -1])
 sc.mod1 <- lm(count ~ time.ipc + prop.partner, sperm.comp1)
@@ -47,16 +47,16 @@ sc.mod2 <- lm(
   sperm.comp1
 )
 
-## 1.5.2 ----
+#### 1.5.2 ####
 summary(sc.mod1)
 
-## 1.5.3 ----
+#### 1.5.3 ####
 sc.mod3 <- lm(count ~ prop.partner, sperm.comp1)
 summary(sc.mod3)
 sc.mod4 <- lm(count ~ 1, sperm.comp1) # null model
 AIC(sc.mod1, sc.mod3, sc.mod4)
 
-## 1.5.4 ----
+#### 1.5.4 ####
 data(sperm.comp2)
 sc2.mod1 <- lm(count ~ f.age + f.height + f.weight + m.age + m.height +
   m.weight + m.vol, sperm.comp2)
@@ -71,21 +71,22 @@ sc <- sperm.comp2[-19, ]
 sc3.mod1 <- lm(count ~ f.age + f.height + f.weight + m.age + m.height +
   m.weight + m.vol, sc)
 summary(sc3.mod1)
-sperm.comp1$m.vol <-
-  sperm.comp2$m.vol[sperm.comp2$pair %in% sperm.comp1$subject]
+sperm.comp1$m.vol <- sperm.comp2$m.vol[
+  sperm.comp2$pair %in% sperm.comp1$subject
+  ]
 sc1.mod1 <- lm(count ~ m.vol, sperm.comp1)
 summary(sc1.mod1)
 
-## 1.5.5 ----
+#### 1.5.5 ####
 sc.c <- summary(sc1.mod1)$coefficients
 sc.c # check info extracted from summary
 sc.c[2, 1] + qt(c(.025, .975), 6) * sc.c[2, 2]
 
-## 1.5.6
+#### 1.5.6 ####
 df <- data.frame(m.vol = c(10, 15, 20, 25))
 predict(sc1.mod1, df, se = TRUE)
 
-## 1.5.7
+#### 1.5.7 ####
 set.seed(1)
 n <- 100
 x <- runif(n)
@@ -94,7 +95,7 @@ y <- 2 + 3 * x + rnorm(n)
 summary(lm(y ~ z))
 summary(lm(y ~ x + z))
 
-## 1.6.4
+#### 1.6.4 ####
 z <- c(1, 1, 1, 2, 2, 1, 3, 3, 3, 3, 4)
 z
 z <- as.factor(z)
