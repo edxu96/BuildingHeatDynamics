@@ -12,10 +12,9 @@ rm(list = ls())
 ## Initialization
 
 ```{r}
-library(MatrixTSA)
+library(tidynamics)
 library(tibble)
 library(tidyverse)
-options(tibble.width = Inf)
 
 source("./src/asHours.R")
 source("./src/asP.R")
@@ -40,11 +39,11 @@ Now install the Rglpk which is used for solving linear programs
 
 ```{r, message=FALSE}
 ti <- read_csv(
-  "~/GitHub/MatrixTSA/data/data_mpc.csv",
+  "~/GitHub/TidyDynamics/data/data_mpc.csv",
   skip = 1,
   col_names = c("timedate", "Y1", "Y2", "Ta", "Gv", "Ph1", "Ph2")
 )
-ti <- ti %>%
+ti %<>%
   mutate(timedate = asP(.$timedate)) %>%
   mutate(t = asHours(.$timedate - .$timedate[1]))
 ```

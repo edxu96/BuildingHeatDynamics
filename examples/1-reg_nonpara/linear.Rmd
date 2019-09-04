@@ -16,11 +16,12 @@ library(tidyverse)
 library(magrittr)
 library(MatrixTSA)
 library(forecast)
+library(ggResidpanel)
 options(tibble.width = Inf)
 ```
 
 ```{r, results=FALSE}
-ti <- read_csv("~/GitHub/MatrixTSA/data/soenderborg_2day.csv")
+ti <- read_csv("~/GitHub/TidyDynamics/data/soenderborg_2day.csv")
 ti_winter <- filter(
   ti,
   as.POSIXlt("2011-06-01")$yday < as.POSIXlt(ti$t)$yday &
@@ -35,12 +36,14 @@ Get the data from house 3 during the winter in year 2011.
 
 ```{r, fig.width=6, fig.height=3}
 lm_winter_3 <- lm(P3 ~ Te, ti_winter)
+tidy(lm_winter_3)
+glance(lm_winter_3)
+augment(lm_winter_3)
 summary(lm_winter_3)
 ```
 
 ```{r, fig.align="center", fig.cap="Linear Reg of Heating Load (y) and Ext Temp (x) in Winter"}
-par(mfrow = c(2, 2))
-plot(lm_winter_3)
+resid_panel(lm_winter_3, plots = "R", smoother = TRUE)
 ```
 
 The P-values of coefficients for intercept and `Te` are sufficiently small, so  it's a good model. However, from the top-left diagram, we can say the residuals are not iid.
@@ -51,8 +54,7 @@ summary(lm_3)
 ```
 
 ```{r}
-par(mfrow = c(2, 2))
-plot(lm_3)
+resid_panel(lm_3, plots = "R", smoother = TRUE)
 ```
 
 When including the entire period, the span of the data is extended. There are more large residuals.
