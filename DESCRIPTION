@@ -1,6 +1,6 @@
-Package: TidyDynamics
+Package: tidynamics
 Type: Package
-Title: Multivariate Regression of System Dynamics Tidily
+Title: Tidy Multivariate (Non)Linear Dynamic Systems
 Version: 0.1.0
 Author: Edward J. Xu
 Maintainer: Edward J. Xu <edxu96@outlook.com>
@@ -18,4 +18,4 @@ Imports:
     stringr,
     tidyverse,
     magrittr
-URL: http://github.com/edxu96/MatrixTSA
+URL: http://github.com/edxu96/tidynamics

@@ -1,6 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# TidyDynamics <a href='https://edxu96.github.io'><img src='./images/1.jpg' align="right" height="138.5" /></a>
+# tidynamics <a href='https://edxu96.github.io'><img src='./images/1.jpg' align="right" height="138.5" /></a>
 
 <!-- badges: start -->
 Tidy Multivariate (Non)Linear Dynamic Systems
