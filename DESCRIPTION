@@ -19,3 +19,5 @@ Imports:
     tidyverse,
     magrittr
 URL: http://github.com/edxu96/tidynamics
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr

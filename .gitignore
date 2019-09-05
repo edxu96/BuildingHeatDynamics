@@ -42,3 +42,6 @@ vignettes/*.pdf
 rsconnect/
 .DS_Store
 .Rproj.user
+doc
+Meta
+inst/doc
