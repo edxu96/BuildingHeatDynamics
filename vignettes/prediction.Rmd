@@ -1,0 +1,23 @@
+---
+title: "Prediction"
+author: Edward J. Xu
+date: "`r Sys.Date()`"
+editor_options: 
+  chunk_output_type: console
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Put the title of your vignette here}
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+# 1, Load Prediction
+
+```{r}
+
+```
+
+# 2, Wind Power Prediction
+
+
+# 3, Solar Power Prediction

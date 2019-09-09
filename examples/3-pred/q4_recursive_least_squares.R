@@ -1,8 +1,8 @@
-## ----------------------------------------------------------------
+
 rm(list = ls())
-setwd("~/GitHub/MatrixTSA")
+setwd("~/GitHub/tidynamics")
 sapply(
-  dir("./examples_source/prediction/functions", full.names = TRUE), source
+  dir("./examples/3-pred/funcs", full.names = TRUE), source
 )
 
 ## A function for fitting a recursive least squares estimation

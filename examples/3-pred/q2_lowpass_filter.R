@@ -1,8 +1,10 @@
-## ----------------------------------------------------------------
-rm(list = ls())
-setwd("~/GitHub/MatrixTSA")
+## Low-Pass Filtering
+## Edward J. Xu
+## Sept 8, 2019
 
-## ----------------------------------------------------------------
+rm(list = ls())
+setwd("~/GitHub/tidynamics")
+
 ## In order to take dynamics into account we can filter the inupts
 ## One can say it is a transformations of the inputs (like with base splines).
 

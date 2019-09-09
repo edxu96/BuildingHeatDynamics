@@ -1,8 +1,12 @@
-## 0, Intialize ----
+
+
 rm(list = ls())
-setwd("~/GitHub/MatrixTSA")
+
+library(splines)
+
+setwd("~/GitHub/tidynamics")
 sapply(
-  dir("./examples_source/prediction/functions", full.names = TRUE), source
+  dir("./examples/3-pred/funcs", full.names = TRUE), source
 )
 li_data <- readRDS("./data/data_soenderborg.RDS")
 
@@ -29,7 +33,7 @@ plotmulti(datf, c("Ps|G"))
 ## See the scatter plot
 plot(datf$G, datf$Ps)
 
-## 1, Linear Regression ----
+#### 1, Linear Regression ####
 fit <- lm(Ps ~ G, datf[itrain, ])
 abline(fit)
 
@@ -52,7 +56,7 @@ Xafternoon <- datf[asPlt(datf$t)$hour > 12, ]
 points(Xafternoon$G, Xafternoon$Ps, col = 2)
 abline(lm(Ps ~ G, Xafternoon), col = 2)
 
-## 2, Base spline model with lm ----
+#### 2, Base spline model with lm ####
 ## Use the time of day to calculate base splines and multiply with G
 ## in this way the function between Ps and G can change conditional on time
 ## of day
@@ -70,7 +74,7 @@ plot(tmp$t, tmp$Ps, type = "l")
 lines(tmp$t, tmp$Ps - tmp$residuals_lm, col = 2)
 lines(tmp$t, tmp$Ps - tmp$residuals_bs_lm, col = 3)
 
-## 3, Base spline with rls ----
+#### 3, Base spline with rls ####
 
 #' Write an objective function calculating the score
 obj <- function(prm, frml, data, k, ieval = 1:nrow(data)) {
@@ -107,7 +111,7 @@ lines(tmp$Ps - tmp$residuals_bs_lm, col = 3)
 rmse(datf$residuals_bs_rls[itest])
 rmse(datf$residuals_bs_lm[itest])
 
-## 4, Kernel model ----
+#### 4, Kernel model ####
 
 ## Wrap the leave-one-out in a function which returns the score
 obj <- function(h, frml, data, k = k, ieval = 1:nrow(data), n_min = 10, return_yhat = FALSE) {
@@ -169,3 +173,4 @@ rmse(datf$residuals_kern[itest])
 rmse(datf$residuals_bs_lm[itest])
 rmse(datf$residuals_bs_rls[itest])
 rmse(datf$residuals_lm[itest])
+

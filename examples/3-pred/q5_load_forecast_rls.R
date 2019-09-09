@@ -1,12 +1,12 @@
 ## 1, Intialize ----
 rm(list = ls())
-setwd("~/GitHub/MatrixTSA")
+setwd("~/GitHub/tidynamics")
 sapply(
-  dir("./examples_source/prediction/functions", full.names = TRUE), source
+  dir("./examples/3-pred/funcs", full.names = TRUE), source
 )
 li_data <- readRDS("./data/data_soenderborg.RDS")
 
-# 2, RLS for load forecasting ----
+##### 2, RLS for load forecasting ####
 
 ## Make a li_data.frame with synced observations and NWPs
 k <- 24
@@ -44,7 +44,7 @@ lines(datf$t[i], datf$yhat[i], type = "l", col = 2)
 ## The tracked coefficients
 plot.ts(fit$Theta[i, ])
 
-## 3, Define an objective function for tuning the prm ----
+#### 3, Define an objective function for tuning the prm ####
 ## (i.e. lp coefficients and lambda)
 
 ## Extend the objective function to have a "burn-in" period (the score is only
@@ -97,7 +97,8 @@ lines(datf$t[itest], fit$Theta[itest, 1], col = 1)
 lines(datf$t[itest], fit$Theta[itest, 2], col = 2)
 lines(datf$t[itest], fit$Theta[itest, 3], col = 3)
 
-## 4, Calculate the forecasts for multiple horizons ----
+#### 4, Calculate the forecasts for multiple horizons ####
+
 ## (Beyond scope)
 ## Can take some time to run, but included to give the script calculating the
 ## full forecasts
