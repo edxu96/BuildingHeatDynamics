@@ -14,66 +14,31 @@ library(purrr)
 library(lubridate)
 library(stringr)
 library(splines)
+library(tidymodels)
 setwd("~/GitHub/tidynamics")
 sapply(
   dir("./examples/3-pred/funcs", full.names = TRUE), source
 )
 
 #### 0, Data ####
-li <- readRDS("./data/data_soenderborg.RDS")
+li <- readRDS("./data/data_soenderborg_tidy.RDS")
 
-## Change the column names in `li$Gnwp` like "k1" to "t1"
-for (i in names(li$Gnwp)) {
-  li$Gnwp[paste0("t", str_sub(i, 2, -1))] = li$Gnwp[i]
-}
-
-#' Get the first character in the string
-str_sub_1 <- function(chr){
-  i <- NA
-  if (str_sub(chr, 1, 1) == "k") {
-    i <- "p_temp"
-  } else {
-    i <- "p_g"
-  }
-  return(i)
-}
-
-#' Get the value of step from the column names like "k1"
-get_ahead <- function(chr){
-  return(strtoi(str_sub(chr, 2, -1)))
-}
-
-## Get the forcast of ambient temperature and solar radiation, measurement of
-##   ambient temp, solar radiation and heat load in house 4
-ti <-
-  as_tibble(
-    cbind(
-      data.frame(
-        "t" = li$t, "s" = 1:length(li$t), "temp" = li$Ta, "g" = li$G,
-        "ph" = li$Ph4
-      ),
-      li$Tanwp, li$Gnwp[, 50:98]
-    )
-  ) %>%
-  gather(-t, -s, -temp, -g, -ph, key = "ahead_chr", value = "pred") %>%
-  mutate(whi = map_chr(ahead_chr, str_sub_1)) %>%
-  mutate(ahead = map_int(ahead_chr, get_ahead)) %>%
-  mutate(w = s + ahead) %>%
-  select(w, ahead, temp, g, ph, s, t, whi, pred) %>%
-  arrange(w, ahead) %>%
-  spread(key = whi, value = pred) %>%
-  select(w, ahead, temp, p_temp, g, p_g, ph, s, t) %>%
-  mutate(hour = hour(t)) %>%
-  print()
-
-## Apply a low-pass filter on the 1 step ahead ambient temperature
-split_a1 <- ti %>%
+## Split to training and testing sets
+split_a1 <- li$pred %>%
   filter(ahead == 1) %>%
-  mutate(hour = hour(.$t)) %>%
-  select(w, s, p_temp, p_g, ph, hour, t) %>%
+  left_join(li$time, by = "fo") %>%
+  mutate(hour = hour(.$time)) %>%
+  select(fo, hour, t_a_p, g_p) %>%
   initial_split(0.6)
 
+split_a1 %>%
+  {print(training(.))}
+
 #### 1, Linear Reg ####
+
+split_a1 %>%
+  training() %>%
+
 
 ## Define the recipe with original forecasted ambient temperature
 recipe_a1 <- split_a1 %>%

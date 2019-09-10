@@ -17,51 +17,7 @@ sapply(
 )
 
 #### 0, Data ####
-li <- readRDS("./data/data_soenderborg.RDS")
-
-## Change the column names in `li$Gnwp` like "k1" to "t1"
-for (i in names(li$Gnwp)) {
-  li$Gnwp[paste0("t", str_sub(i, 2, -1))] = li$Gnwp[i]
-}
-
-#' Get the first character in the string
-str_sub_1 <- function(chr){
-  i <- NA
-  if (str_sub(chr, 1, 1) == "k") {
-    i <- "p_temp"
-  } else {
-    i <- "p_g"
-  }
-  return(i)
-}
-
-#' Get the value of step from the column names like "k1"
-get_ahead <- function(chr){
-  return(strtoi(str_sub(chr, 2, -1)))
-}
-
-## Get the forcast of ambient temperature and solar radiation, measurement of
-##   ambient temp, solar radiation and heat load in house 4
-ti <-
-  as_tibble(
-    cbind(
-      data.frame(
-        "t" = li$t, "s" = 1:length(li$t), "temp" = li$Ta, "g" = li$G,
-        "ph" = li$Ph4
-      ),
-      li$Tanwp, li$Gnwp[, 50:98]
-    )
-  ) %>%
-  gather(-t, -s, -temp, -g, -ph, key = "ahead_chr", value = "pred") %>%
-  mutate(whi = map_chr(ahead_chr, str_sub_1)) %>%
-  mutate(ahead = map_int(ahead_chr, get_ahead)) %>%
-  mutate(w = s + ahead) %>%
-  select(w, ahead, temp, g, ph, s, t, whi, pred) %>%
-  arrange(w, ahead) %>%
-  spread(key = whi, value = pred) %>%
-  select(w, ahead, temp, p_temp, g, p_g, ph, s, t) %>%
-  mutate(hour = hour(t)) %>%
-  print()
+li <- readRDS("./data/data_soenderborg_tidy.RDS")
 
 #### 1, Linear Reg ####
 
