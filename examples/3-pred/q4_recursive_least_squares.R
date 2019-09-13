@@ -1,3 +1,6 @@
+## Recursive Least Square
+## Edward J. Xu, edxu96@outlook.com
+## Sept 11, 2019
 
 rm(list = ls())
 setwd("~/GitHub/tidynamics")
@@ -46,6 +49,8 @@ rls <- function(formula, lambda, data, k) {
       yhat[i + k] <- t(x) %*% theta
     }
   }
+
+
 
   ## Return a list
   L <- list()
