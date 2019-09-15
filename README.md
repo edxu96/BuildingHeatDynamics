@@ -3,7 +3,7 @@
 # tidynamics <a href='https://edxu96.github.io'><img src='./images/1.jpg' align="right" height="138.5" /></a>
 
 <!-- badges: start -->
-Tidy Multivariate (Non)Linear Dynamic Systems
+Tidy Analysis of Multivariate (Non)-Linear Dynamic Systems
 <!-- badges: end -->
 
 ## Introduction
@@ -19,11 +19,11 @@ Modern statistics in R.
 ## How to Install
 
 ```
-install.packages(pkgs = TidyDynamics, repos = https://github.com/edxu96/TidyDynamics.git)
+install.packages(pkgs = tidynamics, repos = https://github.com/edxu96/tidynamics.git)
 ```
 
 ```
-> devtools::install_github("edxu96/TidyDynamics")
+> devtools::install_github("edxu96/tidynamics")
 ```
 
 The input and output from observations of some dynamic process can always be combined to a matrix, which we call `mat_oi`. For outputs with uni-variate time series, there are only two columns in the matrix. For those with multivariate time series, it's convenient to see the data in matrix.
@@ -45,7 +45,7 @@ The following categories of models will be included in this package.
 
 ### Features
 
-- [x] TidyVerse Favored Grammar
+- [x] `tidyverse` Favored Grammar
 - [ ] Adaptivity
 - [ ] Based on Likelihood Theory
 - [ ] Matrix Computaiton
@@ -67,5 +67,5 @@ Well-Defined Data from Physical Systems
 
 ## More Info
 
-- Detailed explaination can be found in [edxu96/TidyDynamics/wiki](https://github.com/edxu96/TidyDynamics/wiki/1-Home).
-- 极简动力：动态系统多元回归分析。
+- Detailed explaination can be found in [edxu96/tidynamics/wiki](https://github.com/edxu96/tidynamics/wiki/1-Home).
+- 极简动力：多元非线性动态系统的极简风格分析。
