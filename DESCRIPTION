@@ -17,7 +17,15 @@ Imports:
     ctsmr,
     stringr,
     tidyverse,
-    magrittr
+    magrittr,
+    splines,
+    broom,
+    purrr,
+    lubridate,
+    tidymodels,
+    tsibble,
+    bbplot,
+    ggfortify
 URL: http://github.com/edxu96/tidynamics
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr

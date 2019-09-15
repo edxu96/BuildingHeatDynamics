@@ -1,8 +1,0 @@
-name: "MatrixTSA-Docs"
-navbar:
-  title: "MatrixTSA-Docs"
-  left:
-    - text: "Home"
-      href: index.html
-    - text: "About"
-      href: about.html
