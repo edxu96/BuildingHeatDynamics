@@ -44,7 +44,7 @@ ti <-
   drop_na()
 ```
 
-# 1, Simple Linear Regression and 
+# 1, Simple Linear Regression
 
 ```{r}
 li_mod <- list(
@@ -63,7 +63,7 @@ li_mod %>%
   map_df(glance, .id = "period")
 ```
 
-The P-values of coefficients for intercept and `Te` are sufficiently small, so  they are both qualified models.
+The P-values of coefficients for intercept and `Te` are too small, so neither of them is a qualified model.
 
 ## 1.1, Residual Analysis
 

@@ -1,5 +1,5 @@
 ---
-title: "Prediction"
+title: "Grey Box Modeling"
 author: Edward J. Xu
 date: "`r Sys.Date()`"
 editor_options: 
@@ -10,14 +10,3 @@ vignette: >
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 ---
-
-# 1, Load Prediction
-
-```{r}
-
-```
-
-# 2, Wind Power Prediction
-
-
-# 3, Solar Power Prediction
