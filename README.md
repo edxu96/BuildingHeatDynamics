@@ -16,6 +16,14 @@ Modern statistics in R.
 
 > The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures. ([tidyverse](https://www.tidyverse.org))
 
+### Features
+
+- [x] `tidyverse` Favored Grammar
+- [ ] Adaptivity
+- [ ] Based on Likelihood Theory
+- [ ] Matrix Computation
+- [x] Functionals and Structs
+
 ## How to Install
 
 ```
@@ -43,13 +51,12 @@ The following categories of models will be included in this package.
 | Stochastic Diff. Eq.    | Dynamic          | Non-Linear          |
 | Tree-Based M.           | Static           | Non-Linear          |
 
-### Features
+### Vignettes
 
-- [x] `tidyverse` Favored Grammar
-- [ ] Adaptivity
-- [ ] Based on Likelihood Theory
-- [ ] Matrix Computaiton
-- [ ] Functionals and Structs
+- [x] [Linear Regression](./files/1-linear.pdf)
+- [ ] [Grey-Box Modeling](./files/2-greybox.pdf)
+- [ ] [Non-Linear Regression](./files/3-pred.pdf)
+- [ ] [Model Predictive Control](./files/4-mpc/pdf)
 
 ## When to Use
 
