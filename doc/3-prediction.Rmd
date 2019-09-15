@@ -3,7 +3,7 @@ title: "Prediction"
 author: Edward J. Xu
 date: "`r Sys.Date()`"
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Put the title of your vignette here}
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r}
+```{r, message=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(magrittr)
@@ -32,9 +32,14 @@ library(lubridate)
 library(stringr)
 library(splines)
 library(glue)
-sapply(
-  dir("~/GitHub/tidynamics/vignettes/funcs/pred", full.names = TRUE), source
+
+files <- dir(
+  "~/GitHub/tidynamics/vignettes/funcs/pred",
+  full.names = TRUE
   )
+for (i in 1:length(files)) {
+  source(files[i])
+}
 ```
 
 # 1, Data Process

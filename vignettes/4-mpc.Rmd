@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 ## Initialization
 
-```{r, message=F, include=FALSE}
+```{r, message=FALSE}
 library(tidynamics)
 library(tibble)
 library(tidyverse)

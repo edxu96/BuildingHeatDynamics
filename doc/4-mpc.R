@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   fig.asp = 9/16
   )
 
-## ---- message=F, include=FALSE-------------------------------------------
+## ---- message=FALSE------------------------------------------------------
 library(tidynamics)
 library(tibble)
 library(tidyverse)

@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 
-## ------------------------------------------------------------------------
+## ---- message=FALSE------------------------------------------------------
 library(tidyverse)
 library(tidymodels)
 library(magrittr)
@@ -18,9 +18,14 @@ library(lubridate)
 library(stringr)
 library(splines)
 library(glue)
-sapply(
-  dir("~/GitHub/tidynamics/vignettes/funcs/pred", full.names = TRUE), source
+
+files <- dir(
+  "~/GitHub/tidynamics/vignettes/funcs/pred",
+  full.names = TRUE
   )
+for (i in 1:length(files)) {
+  source(files[i])
+}
 
 ## ------------------------------------------------------------------------
 ## The data is stored in list

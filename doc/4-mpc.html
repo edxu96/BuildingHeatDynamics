@@ -102,6 +102,19 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <div id="initialization" class="section level2">
 <h2>Initialization</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidynamics)
+<span class="kw">library</span>(tibble)
+<span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(gridExtra)
+<span class="kw">library</span>(egg)
+<span class="co">#&gt; Warning: package 'egg' was built under R version 3.5.2</span>
+
+<span class="kw">source</span>(<span class="st">&quot;~/GitHub/tidynamics/vignettes/funcs/mpc/asHours.R&quot;</span>)
+<span class="kw">source</span>(<span class="st">&quot;~/GitHub/tidynamics/vignettes/funcs/mpc/asP.R&quot;</span>)
+<span class="kw">source</span>(<span class="st">&quot;~/GitHub/tidynamics/vignettes/funcs/mpc/prbs.R&quot;</span>)
+<span class="kw">source</span>(<span class="st">&quot;~/GitHub/tidynamics/vignettes/funcs/mpc/sim_building.R&quot;</span>)
+<span class="co">#&gt; Warning: package 'lpSolve' was built under R version 3.5.2</span>
+<span class="co">#&gt; Warning: package 'expm' was built under R version 3.5.2</span></code></pre></div>
 <p>If you have a working GLPK solver on your system and want to implement a computationally more optimized controller use the following</p>
 <ul>
 <li>install.packages(“curl”)</li>

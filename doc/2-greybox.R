@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 
-## ------------------------------------------------------------------------
+## ---- message=FALSE------------------------------------------------------
 library(ctsmr)
 library(tidynamics)
 
