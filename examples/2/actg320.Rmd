@@ -1,0 +1,154 @@
+---
+title: "Survival Regression, actg320, EDXU"
+output: html_notebook
+author: Edward J. Xu
+---
+
+The second data set for this assignment comes from a double-blind, placebo-controlled trial that com- pared a three-drug treatment with a standard two-drug treatment in HIV-infected patients (Hammer et al., 1997). Patients were eligible for the trial if they had no more than 200 CD4 cells per cubic millimeter and at least three months of prior zidovudine therapy. Randomization was stratified by CD4 cell count at the time of screening. The primary outcome measure was time to AIDS or death. Because efficacy results met a pre-specified level of significance at an interim analysis, the trial was stopped early. The data come from Hosmer, D.W. and Lemeshow, S. and May, S. (2008) Applied Survival Analysis: Regression Modeling of Time to Event Data: Second Edition, John Wiley and Sons Inc., New York, NY.
+
+```{r, fig.width = 10}
+# Clear variables
+rm(list=ls())
+library(survival)
+```
+
+```{r, fig.width = 10}
+data_actg320 <- read.table("actg320.txt", header = TRUE)
+id <- data_actg320[,1]
+time <- data_actg320[,2]
+event <- data_actg320[,3]
+treatment <- data_actg320[,4]
+sex <- data_actg320[,5]
+raceth <- data_actg320[,6]
+karnof <- data_actg320[,7]
+cd4 <- data_actg320[,8]
+age <- data_actg320[,9]
+data.f_actg320 <- data.frame(id, time, event, treatment, sex, raceth, karnof, cd4, age)
+```
+
+## Descriptive Statistics
+
+How many patients got AIDS or died in the two treatment groups? 
+
+```{r, fig.width = 10}
+nrow(data.f_actg320[which(data.f_actg320$event == 1 & data.f_actg320$treatment == 1), ])  # [Number of getting AIDS or died in group with new treatment]
+nrow(data.f_actg320[which(data.f_actg320$event == 1 & data.f_actg320$treatment == 0), ])  # [Number of getting AIDS or died in group with control treatment]
+```
+
+How long was the total follow-up time in the two groups?
+
+```{r, fig.width = 10}
+data.f_actg320_1 <- data.f_actg320[data.f_actg320$treatment == 1, ]
+sum(data.f_actg320_1$time)  # [Total follow-up time in group with new treatment]
+data.f_actg320_0 <- data.f_actg320[data.f_actg320$treatment == 0, ]
+sum(data.f_actg320_0$time)  # [Total follow-up time in group with control treatment]
+```
+
+Plot the survival functions in the two treatment groups, which group seems to be doing best?
+
+```{r, fig.width = 10}
+Surv_actg320_1 <- survfit(Surv(time, event == 1) ~ 1, conf.type = "plain", data = data.f_actg320_1)
+Surv_actg320_0 <- survfit(Surv(time, event == 1) ~ 1, conf.type = "plain", data = data.f_actg320_0)
+plot(Surv_actg320_1, conf.int = F, col = 2, ylim = c(0.8, 1), xlab = "Days", ylab = "Kaplan-Meier Estimated Survival Prob.")
+lines(Surv_actg320_0, conf.int = F, col = 4, ylim = c(0.8, 1))
+title(main = "Survival functions for the two treatment groups")
+legend("bottomleft", col = c(2, 4), c("New treatment group", "Control treatment group"), lwd = 2)
+```
+
+So, the group with new treatment seems to be doing better.
+
+Plot the cumulative incidence functions for the two groups, which plot would you prefer?
+
+```{r, fig.width = 10}
+plot(Surv_actg320_1, conf.int = F, fun = function(x){1-x}, col = 2, ylim = c(0, 0.2), xlab = "Days", ylab = "Number of patients have been diagnosed AIDS or dead")
+lines(Surv_actg320_0, conf.int = F, fun = function(x){1-x}, col = 4, ylim = c(0, 0.2))
+title(main = "Cumulative incidence functions for the two treatment groups")
+legend("topleft", col = c(2, 4), c("New treatment group", "Control treatment group"), lwd = 2)
+```
+
+I prefer cumulative incidence functions.
+
+```{r, fig.width = 10}
+survdiff(Surv(time, event == 1) ~ treatment, rho = 0, data = data.f_actg320)  # rho = 0, means log-rank or Mantel-Haenszel test
+```
+
+## Parametric Survival Models
+
+Fit parametric survival models containing treatment (tx) and CD4 count (cd4) as explanatory variables.
+
+Try using the exponential, Weibull and log-logistic models, which one gave the best fit (and why)?
+
+```{r, fig.width = 10}
+reg.exp_actg320 <- survreg(Surv(time, event == 1) ~ treatment + cd4, data = data_actg320, dist = "exponential")
+summary(reg.exp_actg320)
+```
+
+```{r, fig.width = 10}
+Reg.exp_actg320 <- function(model, treatment, cd4, time){
+    u.t <- time / exp(model$coefficients[1] + model$coefficients[2] * treatment + model$coefficients[3] * cd4)
+    S.t <- exp(- u.t)
+    return(S.t)
+}
+cd4_test.mean <- mean(data.f_actg320$cd4)
+time_test <- seq(0, 350, by = 1)
+plot(Surv_actg320_1, conf.int = F, col = 2, lwd = 2, ylim = c(0.8, 1), xlab = "Days", ylab = "Kaplan-Meier Estimated Survival Prob.")
+lines(time_test, Reg.exp_actg320(reg.exp_actg320, 1, cd4_test.mean - 35, time_test), col = 2, lty = 2, lwd = 2)
+lines(Surv_actg320_0, conf.int = F, col = 4, lwd = 2)
+lines(time_test, Reg.exp_actg320(reg.exp_actg320, 0, cd4_test.mean - 35, time_test), col = 4, lty = 2, lwd = 2)
+title(main = "Survival functions and exponential regression for the two treatment groups")
+for (plus in 1:10){
+    lines(time_test, Reg.exp_actg320(reg.exp_actg320, 1, cd4_test.mean - 5 * plus, time_test), col = 2, lty = 3, lwd = 0.5)
+}
+legend("bottomleft", col = c(2, 2, 2, 4, 4), lty = c(1, 2, 3, 1, 2), lwd = c(2, 2, 1, 2, 2), c("New treatment", "New treatment regression", "New treatment regression with different cd4", "Control treatment", "Control treatment regression"))
+```
+
+```{r, fig.width = 10}
+reg.weibull_actg320 <- survreg(Surv(time, event == 1) ~ treatment + cd4, data = data_actg320, dist = "weibull")
+summary(reg.weibull_actg320)
+```
+
+```{r, fig.width = 10}
+Reg.weibull_actg320 <- function(model, treatment, cd4, time){
+    u.t <- time / exp(model$coefficients[1] + model$coefficients[2] * treatment + model$coefficients[3] * cd4)
+    lambda <- model$scale
+    S.t <- exp(- u.t^lambda)
+    return(S.t)
+}
+cd4_test.mean <- mean(data.f_actg320$cd4)
+time_test <- seq(0, 350, by = 1)
+plot(Surv_actg320_1, conf.int = F, col = 2, lwd = 2, ylim = c(0.8, 1), xlab = "Days", ylab = "Kaplan-Meier Estimated Survival Prob.")
+lines(time_test, Reg.weibull_actg320(reg.weibull_actg320, 1, cd4_test.mean - 90, time_test), col = 2, lty = 2, lwd = 2)
+lines(Surv_actg320_0, conf.int = F, col = 4, lwd = 2)
+lines(time_test, Reg.weibull_actg320(reg.weibull_actg320, 0, cd4_test.mean - 90, time_test), col = 4, lty = 2, lwd = 2)
+title(main = "Survival functions and weibull regression for the two treatment groups")
+for (plus in 1:10){
+    lines(time_test, Reg.weibull_actg320(reg.weibull_actg320, 1, cd4_test.mean - 60 - 5 * plus, time_test), col = 2, lty = 3, lwd = 0.5)
+}
+legend("bottomleft", col = c(2, 2, 2, 4, 4), lty = c(1, 2, 3, 1, 2), lwd = c(2, 2, 1, 2, 2), c("New treatment", "New treatment regression", "New treatment regression with different cd4", "Control treatment", "Control treatment regression"))
+```
+
+```{r, fig.width = 10}
+reg.loglogistic_actg320 <- survreg(Surv(time, event == 1) ~ treatment + cd4, data = data_actg320, dist = "loglogistic")
+summary(reg.loglogistic_actg320)
+```
+
+```{r, fig.width = 10}
+Reg.loglogistic_actg320 <- function(model, treatment, cd4, time){
+    u.t <- time / exp(model$coefficients[1] + model$coefficients[2] * treatment + model$coefficients[3] * cd4)
+    lambda <- model$scale
+    S.t <- 1 / (1 + u.t^lambda)
+    return(S.t)
+}
+cd4_test.mean <- mean(data.f_actg320$cd4)
+time_test <- seq(0, 350, by = 1)
+plot(Surv_actg320_1, conf.int = F, col = 2, lwd = 2, ylim = c(0.8, 1), xlab = "Days", ylab = "Kaplan-Meier Estimated Survival Prob.")
+lines(time_test, Reg.loglogistic_actg320(reg.loglogistic_actg320, 1, cd4_test.mean - 90, time_test), col = 2, lty = 2, lwd = 2)
+lines(Surv_actg320_0, conf.int = F, col = 4, lwd = 2)
+lines(time_test, Reg.loglogistic_actg320(reg.loglogistic_actg320, 0, cd4_test.mean - 90, time_test), col = 4, lty = 2, lwd = 2)
+title(main = "Survival functions and log-logistic regression for the two treatment groups")
+for (plus in 1:10){
+    lines(time_test, Reg.loglogistic_actg320(reg.loglogistic_actg320, 1, cd4_test.mean - 60 - 5 * plus, time_test), col = 2, lty = 3, lwd = 0.5)
+}
+legend("bottomleft", col = c(2, 2, 2, 4, 4), lty = c(1, 2, 3, 1, 2), lwd = c(2, 2, 1, 2, 2), c("New treatment", "New treatment regression", "New treatment regression with different cd4", "Control treatment", "Control treatment regression"))
+```
+
