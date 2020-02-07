@@ -1,0 +1,481 @@
+---
+title: "ETF Weekly Return"
+output: html_notebook
+author: Edward J. Xu
+---
+
+```{r, include = FALSE}
+# Clear variables
+rm(list=ls())
+library(knitr)
+```
+
+In this project, the weekly returns for an ETF is analyzed and modelled. An ETF (Exchange Traded Fund) can be described as a structured publicly traded pool of shares. ETFs are bought and sold in the same way as ordinary shares on a stock exchange.
+
+An ETF is a pooled investment fund similar to a unit trust or mutual fund. For investors, ETFs blend the benefits of pooled funds and shares.
+
+The available data is found in the file and consists of 2 columns. The first column is a date column and the second column indicates the weekly returns (i.e. the ratio between the final and initial price for that week minus 1) of 1 ETF.
+
+An important aspect of financial date is the volatility, i.e. standard error of the return. In this assignment you will explore properties of volatility and return in the given data, and a model for the time evolution of these.
+
+# 1 Descriptive statistics and initial analysis
+
+## 1 a)
+
+Present the data, estimate the parameters in a normal model, and asses if the normal model is appropriate.
+
+```{r, fig.width = 10}
+dataETF <- read.csv("finance_data.csv", sep = ";")
+time <- dataETF[, 1]
+SPY <- dataETF[, 2]
+x <- seq(1, length(time))
+dataETF.f <- data.frame(x, time, SPY)
+plot(dataETF.f$x, dataETF$SPY, type = 'l', col = "blue", xlab = 'time', ylab = 'SPY', main = 'SPY as a function of time')
+```
+
+```{r, fig.width = 10}
+hist(dataETF.f$SPY, prob = TRUE, breaks = 50, main = "Histogram for SPY of ETF", xlab = "SPY", col = "gray90", xlim = c(-0.15, 0.15))
+lines(density(dataETF.f$SPY), lwd = 2, col = 4)
+```
+
+```{r, fig.width = 10}
+# Define function that return negative log-likelihood for gamma distribution
+negaLogL_normal <- function(pars, data){
+    return(-sum(dnorm(x = data, mean = pars[1], sd = pars[2], log = TRUE)))
+}
+
+optDnormSPY <- function(data){
+    # Optimize alpha and theta parameters in normal distribution
+    dnorm.optim <- optim(c(0.1, 0.1), fn = negaLogL_normal, gr = NULL, data = data)
+    # Plot optimized normal distribution density and density of SPY
+    density_SPY <- density(data, adjust = 0.7)
+    seqX_SPY <- seq(-0.15, 0.15, length.out = 100) 
+    dnorm.optim_SPY = dnorm(seqX_SPY, mean = dnorm.optim$par[1], sd = dnorm.optim$par[2])
+    hist(data, breaks = 50, prob = TRUE, main = NULL, xlim = c(min(data), max(data)), xlab = "SPY", ylab = "Density", col = "gray95")
+    lines(density_SPY$x, density_SPY$y, col = 'blue', lwd = 2)
+    lines(seqX_SPY, dnorm.optim_SPY, col = 'red', lwd = 2, lty = 2)
+    legend("topleft", inset = .02, legend = c("Normal Distribution by MLE", "Density"), col = c("red", "blue"), lty = c(1, 2), lwd = c(2, 2), cex = 0.8)
+    return(dnorm.optim)
+}
+
+dnorm.optim_1 <- optDnormSPY(dataETF.f$SPY)
+title(main = "Normal Distribution by MLE and Density of SPY in ETF", font.main = 3)
+```
+
+```{r}
+logL_dnorm.optim_1 <- - negaLogL_normal(dnorm.optim_1$par, dataETF.f$SPY)
+aic_dnorm.optim_1 <- - 2 * logL_dnorm.optim_1 + 2 * 2
+aic_dnorm.optim_1
+```
+
+```{r, fig.width = 10}
+qqnorm(dataETF.f$SPY)
+qqline(dataETF.f$SPY)
+```
+
+## 1 b)
+
+Hypothesize a model that could fit the data better (Hint: consider tail probabilities), and compare with the normal model estimated above
+
+The probability that a random variable deviates by a given amount from its expectation is referred to as a tail probability.
+
+### 1, tail <- 0.06
+
+```{r, fig.width = 10}
+tail <- 0.14
+SPY.tail_1 <- dataETF.f$SPY[(dataETF.f$SPY < mean(dataETF.f$SPY) + tail) & (dataETF.f$SPY > mean(dataETF.f$SPY) - tail)]
+
+## Plot
+dnorm.optim_2 <- optDnormSPY(SPY.tail_1)
+title(main = "Normal Distribution by MLE and Density of SPY.tail_1", font.main = 3)
+```
+
+```{r, fig.width = 10}
+qqnorm(dataETF.f$SPY)
+qqline(SPY.tail_1)
+```
+
+```{r}
+logL_dnorm.optim_2 <- - negaLogL_normal(dnorm.optim_2$par, dataETF.f$SPY)
+aic_dnorm.optim_2 <- - 2 * logL_dnorm.optim_2 + 2 * 2
+aic_dnorm.optim_2
+```
+
+### 2, tail <- 0.04
+
+```{r, fig.width = 10}
+tail <- 0.04
+SPY.tail_2 <- dataETF.f$SPY[(dataETF.f$SPY < mean(dataETF.f$SPY) + tail) & (dataETF.f$SPY > mean(dataETF.f$SPY) - tail)]
+
+## Plot
+dnorm.optim_3 <- optDnormSPY(SPY.tail_2)
+title(main = "Normal Distribution by MLE and Density of SPY.tail_2", font.main = 3)
+```
+
+```{r, fig.width = 10}
+qqnorm(dataETF.f$SPY)
+qqline(SPY.tail_2)
+```
+
+```{r}
+logL_dnorm.optim_3 <- - negaLogL_normal(dnorm.optim_3$par, dataETF.f$SPY)
+aic_dnorm.optim_3 <- - 2 * logL_dnorm.optim_3 + 2 * 2
+aic_dnorm.optim_3
+```
+
+### tail <- 0.02
+
+```{r, fig.width = 10}
+tail <- 0.02
+SPY.tail_3 <- dataETF.f$SPY[(dataETF.f$SPY < mean(dataETF.f$SPY) + tail) & (dataETF.f$SPY > mean(dataETF.f$SPY) - tail)]
+
+## Plot
+dnorm.optim_4 <- optDnormSPY(SPY.tail_3)
+title(main = "Normal Distribution by MLE and Density of SPY.tail_3", font.main = 3)
+```
+
+```{r, fig.width = 10}
+qqnorm(dataETF.f$SPY)
+qqline(SPY.tail_3)
+```
+
+```{r}
+logL_dnorm.optim_4 <- - negaLogL_normal(dnorm.optim_4$par, dataETF.f$SPY)
+aic_dnorm.optim_4 <- - 2 * logL_dnorm.optim_4 + 2 * 2
+aic_dnorm.optim_4
+```
+
+### tail <- 0.06
+
+```{r, fig.width = 10}
+tail <- 0.06
+SPY.tail_4 <- dataETF.f$SPY
+SPY.tail_4[SPY.tail_4 > mean(dataETF.f$SPY) + tail] <- mean(dataETF.f$SPY) + tail
+SPY.tail_4[SPY.tail_4 < mean(dataETF.f$SPY) - tail] <- mean(dataETF.f$SPY) - tail
+
+## Plot
+dnorm.optim_5 <- optDnormSPY(SPY.tail_4)
+title(main = "Normal Distribution by MLE and Density of SPY.tail_4", font.main = 3)
+```
+
+```{r}
+logL_dnorm.optim_5 <- - negaLogL_normal(dnorm.optim_5$par, dataETF.f$SPY)
+aic_dnorm.optim_5 <- - 2 * logL_dnorm.optim_5 + 2 * 2
+aic_dnorm.optim_5
+```
+
+### tail <- 0.03
+
+```{r, fig.width = 10}
+tail <- 0.03
+SPY.tail_5 <- dataETF.f$SPY
+SPY.tail_5[SPY.tail_5 > mean(dataETF.f$SPY) + tail] <- mean(dataETF.f$SPY) + tail
+SPY.tail_5[SPY.tail_5 < mean(dataETF.f$SPY) - tail] <- mean(dataETF.f$SPY) - tail
+
+## Plot
+dnorm.optim_6 <- optDnormSPY(SPY.tail_5)
+title(main = "Normal Distribution by MLE and Density of SPY.tail_5", font.main = 3)
+```
+
+```{r}
+logL_dnorm.optim_6 <- - negaLogL_normal(dnorm.optim_6$par, dataETF.f$SPY)
+aic_dnorm.optim_6 <- - 2 * logL_dnorm.optim_6 + 2 * 2
+aic_dnorm.optim_6
+```
+
+## 1 c)
+
+Present the final model (i.e. relevant keynumbers for the estimates)
+
+# 2 Mixture model
+
+## 2 a) 
+
+Fit normal mixture models with 2 and 3 components, argue which one is better.
+
+```{r}
+y <- dataETF.f$SPY
+```
+
+```{r, fig.width = 10}
+library(mixtools)
+mixtureDnorm.2 <- normalmixEM(dataETF.f$SPY, k = 2, epsilon = 1e-04)
+kable_mixtureDnorm.2 <- data.frame(lambda = mixtureDnorm.2$lambda, mu = mixtureDnorm.2$mu, sigma.square = mixtureDnorm.2$sigma)
+kable(kable_mixtureDnorm.2, align = "l")
+```
+
+```{r, fig.width = 10}
+plot(mixtureDnorm.2)
+```
+
+```{r, fig.width = 10}
+seqX_SPY <- seq(-0.15, 0.15, length.out = 100) 
+value_mixtureDnorm.2 <- mixtureDnorm.2$lambda[1] * dnorm(seqX_SPY, mixtureDnorm.2$mu[1], mixtureDnorm.2$sigma[1]) + mixtureDnorm.2$lambda[2] * dnorm(seqX_SPY, mixtureDnorm.2$mu[2], mixtureDnorm.2$sigma[2])
+
+hist(dataETF.f$SPY, prob = TRUE, breaks = 50, main = "Histogram for SPY of ETF", xlab = "SPY", col = "gray90", xlim = c(-0.15, 0.15))
+lines(density(dataETF.f$SPY), lwd = 2, col = "blue")
+lines(seqX_SPY, value_mixtureDnorm.2, lwd = 2, col = "red", lty = 2)
+legend("topleft", inset = .02, legend = c("Mixture of 2 Normal Distribution by EM", "Density"), col = c("red", "blue"), lty = c(1, 2), lwd = c(2, 2), cex = 0.8)
+```
+
+```{r}
+aic_mixtureDnorm.2 <- - 2 * tail(mixtureDnorm.2$all.loglik, n = 1) + 2 * 2
+aic_mixtureDnorm.2
+```
+
+```{r, fig.width = 10}
+mixtureDnorm.3 <- normalmixEM(dataETF.f$SPY, k = 3, epsilon = 1e-04)
+kable_mixtureDnorm.3 <- data.frame(lambda = mixtureDnorm.3$lambda, mu = mixtureDnorm.3$mu, sigma.square = mixtureDnorm.3$sigma)
+kable(kable_mixtureDnorm.3, align = "l")
+```
+
+```{r}
+aic_mixtureDnorm.3 <- - 2 * tail(mixtureDnorm.3$all.loglik, n = 1) + 2 * 2
+aic_mixtureDnorm.3
+```
+
+```{r}
+## EM Algorithm for mixture of two normal distribution
+#  Reference: 8.5 The EM Algorithm in P272, The Element of Statistical Learning
+cal_gamma <- function(pi, mu1, sigma1, mu2, sigma2, seq_y){
+    gamma <- rep(0, length(seq_y))
+    i <- 1
+    for(y in seq_y){
+        gamma[i] <- pi * dnorm(y, mean = mu2, sd = sigma2) / ((1 - pi) * dnorm(y, mean = mu1, sd = sigma1) + pi * dnorm(y, mean = mu2, sd = sigma2))
+        i <- i + 1
+    }
+    return(gamma)
+}
+cal_mu1.next <- function(gamma, seq_y){
+    i <- 1
+    sum_1 <- 0
+    sum_2 <- 0
+    for(y in seq_y){
+        sum.new_1 <- (1 - gamma[i]) * y
+        sum_1 <- sum_1 + sum.new_1
+        sum.new_2 <- (1 - gamma[i])
+        sum_2 <- sum_2 + sum.new_2
+        i <- i + 1
+    }
+    return(sum_1 / sum_2)
+}
+cal_mu2.next <- function(gamma, seq_y){
+    i <- 1
+    sum_1 <- 0
+    sum_2 <- 0
+    for(y in seq_y){
+        sum.new_1 <- gamma[i] * y
+        sum_1 <- sum_1 + sum.new_1
+        sum.new_2 <- gamma[i]
+        sum_2 <- sum_2 + sum.new_2
+        i <- i + 1
+    }
+    return(sum_1 / sum_2)
+}
+cal_sigma1.next <- function(mu1.next, gamma, seq_y){
+    i <- 1
+    sum_1 <- 0
+    sum_2 <- 0
+    for(y in seq_y){
+        sum.new_1 <- (1 - gamma[i]) * (y - mu1.next)^2
+        sum_1 <- sum_1 + sum.new_1
+        sum.new_2 <- (1 - gamma[i])
+        sum_2 <- sum_2 + sum.new_2
+        i <- i + 1
+    }
+    return(sum_1 / sum_2)
+}
+cal_sigma2.next <- function(mu2.next, gamma, seq_y){
+    i <- 1
+    sum_1 <- 0
+    sum_2 <- 0
+    for(y in seq_y){
+        sum.new_1 <- gamma[i] * (y - mu2.next)^2
+        sum_1 <- sum_1 + sum.new_1
+        sum.new_2 <- gamma[i]
+        sum_2 <- sum_2 + sum.new_2
+        i <- i + 1
+    }
+    return(sum_1 / sum_2)
+}
+cal_pi.next <- function(gamma, seq_y){
+    i <- 1
+    sum <- 0
+    for(y in seq_y){
+        sum.new <- gamma[i] / length(seq_y)
+        sum <- sum + sum.new
+        i <- i + 1
+    }
+    return(sum)
+}
+
+seq_y <- y
+##
+pi.next <- 0.5
+mu1.next <- dnorm.optim_1$par[1]
+sigma1.next <- dnorm.optim_1$par[2]
+mu2.next <- dnorm.optim_1$par[1] + 0.001
+sigma2.next <- dnorm.optim_1$par[2] + 0.001
+gamma.next <- cal_gamma(pi.next, mu1.next, sigma1.next, mu2.next, sigma2.next, seq_y)
+mu1 <- mu1.next - 0.0001
+j <- 1
+while (abs(mu1.next - mu1) > 10^-6) {
+    gamma <- gamma.next
+    mu1 <- mu1.next
+    sigma1 <- sigma1.next
+    mu2 <- mu2.next
+    sigma2 <- sigma2.next
+    pi <- pi.next
+    # Calculate new
+    gamma.next <- cal_gamma(pi, mu1, sigma1, mu2, sigma2, seq_y)
+    mu1.next <- cal_mu1.next(gamma.next, seq_y)
+    sigma1.next <- cal_sigma1.next(mu1.next, gamma.next, seq_y)
+    mu2.next <- cal_mu2.next(gamma.next, seq_y)
+    sigma2.next <- cal_sigma2.next(mu2.next, gamma.next, seq_y)
+    pi.next <- cal_pi.next(gamma.next, seq_y)
+    j <- j + 1
+}
+```
+
+## 2 b) 
+
+For the chosen model, report confidence interval for the parameters, and give an interpretation of these intervals.
+
+## 2 c) 
+
+For the two component model make a profile likelihood plot of one of the variance parameters.
+
+## 2 d) 
+
+In the previous question you should see multiple maxima, reprametrize the model such that you only see one maximum.
+
+## 2 e) 
+
+Present the final model and discuss the interpretaion.
+
+# 3 Hidden Markov Models
+
+## 3 a) 
+
+Fit two and three states normal Hidden Markov Models to the data and conclude on the best choice
+
+```{r}
+## Hidden Markov Chain of Normal Distribution 
+calPn2Pw_hmmDnorm <- function(numDist, mu, sigma, gamma)
+{                                              
+    t_mu <- mu
+    t_sigma <- sigma
+    t_gamma  <- NULL                              
+    if (numDist > 1) {                                            
+        foo   <- log(gamma / diag(gamma))           
+        t_gamma<- as.vector(foo[!diag(numDist)])             
+    }                                             
+    list(t_mu = t_mu, t_sigma = t_sigma, t_gamma = t_gamma)
+}  
+
+calPw2Pn_hmmDnorm <- function(numDist, vecPars)                 
+{                                                     
+    epar <- exp(vecPars$t_gamma)                              
+    mu <- vecPars$t_mu
+    sigma <- vecPars$t_sigma
+    gamma  <- diag(numDist)                                    
+    if (numDist > 1) {                                                  
+        gamma[!gamma] <- epar
+        gamma         <- gamma / apply(gamma, 1, sum)          
+    }                                                   
+    delta  <- solve(t(diag(numDist) - gamma + 1), rep(1, numDist))          
+    list(mu = mu, sigma = sigma, gamma = gamma, delta = delta)           
+}  
+
+maxLogL_hmmDnorm <- function(vecPars, x, numDist, ...)       
+{
+#    print(vecPars)
+    if(numDist == 1) return(- sum(dnorm(x, mu = vecPars[1], sigma = vecPars[2], log = TRUE))) 
+    n          <- length(x)                            
+    parsNatural <- calPw2Pn_hmmDnorm(numDist, vecPars)            
+    allprobs   <- outer(x, c(parsNatural$mu, parsNatural$sigma), dnorm)             
+    allprobs   <- ifelse(!is.na(allprobs), allprobs, 1)  
+    scaleL     <- 0                                    
+    foo        <- parsNatural$delta                             
+    for (i in 1: n) {                                                
+        foo    <- foo %*% parsNatural$gamma * allprobs[i,]            
+        sumfoo <- sum(foo)                               
+        scaleL <- scaleL + log(sumfoo)                    
+        foo    <- foo / sumfoo                            
+    }                                               
+    mllk       <- -scaleL                            
+    mllk                                              
+}
+
+maxLE_hmmDnorm <- function(x, numDist, mu0, sigma0, gamma0,...)
+{                                                      
+    vecPars0 <- calPn2Pw_hmmDnorm(numDist, mu0, sigma0, gamma0)         
+    model <- nlm(maxLogL_hmmDnorm, unlist(vecPars0, use.names = FALSE), x = x, numDist = numDist, stepmax = 30, iterlim = 1000) 
+    parsNatural <- calPw2Pn_hmmDnorm(numDist, model$estimate)            
+    mllk <- model$minimum                              
+    numPars <- length(vecPars0$t_mu) + length(vecPars0$t_sigma) + length(vecPars0$t_gamma)
+    AIC <- 2 * (mllk + numPars)                              
+    n <- sum(!is.na(x))                            
+    BIC <- 2 * mllk + numPars * log(n)                         
+    list(mu = parsNatural$mu, sigma = parsNatural$sigma, gamma = parsNatural$gamma, delta = parsNatural$delta, code = model$code, mllk = mllk, AIC = AIC, BIC = BIC)   
+}  
+```
+
+```{r}
+numDist <- 2
+y <- dataETF.f$SPY
+# mu0 <- quantile(y, c(dnorm.optim_1$par[1] * 0.9, dnorm.optim_1$par[1] * 1.1))
+# sigma0 <- quantile(y, c(dnorm.optim_1$par[2] * 0.9, dnorm.optim_1$par[2] * 1.1))
+mu0 <- c(dnorm.optim_1$par[1] * 0.9, dnorm.optim_1$par[1] * 1.1)
+sigma0 <- c(dnorm.optim_1$par[2] * 0.9, dnorm.optim_1$par[2] * 1.1)
+gamma0 <- matrix(0.05, ncol = numDist, nrow = numDist)
+diag(gamma0) <- 1 - (numDist - 1) * gamma0[1,1]
+
+## optimize
+optHmmDnorm.2 <- maxLE_hmmDnorm(y, numDist, mu0, sigma0, gamma0)
+optHmmDnorm.2
+```
+
+
+## 3 b) 
+
+For the chosen model report 95% confidence intervals for the working parameters.
+
+## 3 c) 
+
+Report the natural parameters and interpret the result.
+
+## 3 d) 
+
+Compare the following distributions (by plots)  
+??? The long term distribution of the return.  
+??? The 1-step ahead distribution given that you known the current state.
+
+## 3 e) 
+
+Report 95% confidence intervals for some (or all) natural parameters (note that the natural paramters include the stationary distribution). Some options for finding these CI???s are  
+??? Formula (3.2) in the textbook.  
+??? The bootstrap method in Section 3.6.2. ??? Profile likelihood.
+
+
+## 3 f) 
+
+Discuss what would be needed in order to make short term (say 1-2 weeks) predictions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

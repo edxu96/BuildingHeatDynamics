@@ -1,0 +1,76 @@
+---
+title: "Example 6.3 and 6.4, Logistic Regression"
+output: html_notebook
+author: Edward J. Xu
+---
+
+```{r, include = FALSE}
+# Clear variables
+rm(list = ls())
+```
+
+## Example 6.3, Experimental Surgery
+
+```{r}
+data_63 <- read.table("surgery.dat")
+plot(data_63)  # Bernulli trail
+```
+
+```{r}
+## negative log likelihood function
+negaLogL <- function(beta, y, X, n){
+    theta <- exp(X %*% beta) / (1 + exp(X %*% beta))
+    - sum(dbinom(y, size = n, prob = theta, log = TRUE))
+}
+## Observation and design matrix
+y <- data_63[ ,2]
+X <- cbind(1, data_63[ ,1] - mean(data_63[ ,1]))
+
+opt <- nlminb(c(-1, 1), negaLogL, y = y, X = X, n = 1)
+
+glm(y ~ -1 + X, family = binomial)
+opt$par
+```
+
+
+
+```{r}
+## Parameter uncertainty
+library(numDeriv)
+H <- hessian(negaLogL, opt$par, y = y, X = X, n = 1)
+se.beta <- sqrt(diag(solve(H)))
+
+summary(glm(y ~ -1 + X, family = binomial))
+se.beta
+
+plot(data_63)  # Bernulli trail
+lines(data_63[ ,1], exp(X %*% opt$par) / (1 + exp(X %*% opt$par)))
+## Interpreted as the probability of death as a
+## function of age
+```
+
+```{r}
+## Or using glm
+fit <- glm(y ~ -1 + X, family = binomial)
+plot(data_63) ## Bernulli trail
+lines(data_63[ ,1], predict(fit, type = "response"))
+## More on the fit
+?predict.glm
+pred <- predict(fit, type = "response", 
+                inteval = "cofidence", se.fit = TRUE)
+
+## Producing confidence intervals
+## Wald confidence intervals
+lines(data_63[ ,1], pred$fit + 2 * pred$se.fit, col = 2, lty = 2)
+lines(data_63[ ,1], pred$fit - 2 * pred$se.fit, col = 2, lty = 2)
+
+## Intervals in linear domain (transformed back to orginal domain)
+pred <- predict(fit, type="link", inteval="cofidence",se.fit=TRUE)
+lines(data_63[ ,1], exp(pred$fit + 2 * pred$se.fit) /
+     (1 + exp(pred$fit + 2 * pred$se.fit)),col=3,lty=2)
+lines(data_63[ ,1], exp(pred$fit - 2 * pred$se.fit) /
+     (1 + exp(pred$fit - 2 * pred$se.fit)),col=3,lty=2)
+```
+
+
+

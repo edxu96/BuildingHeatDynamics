@@ -1,0 +1,402 @@
+---
+title: "DTU02417 TSA: Assignment 2, ARIMA and Seasonal Model"
+output: html_notebook
+author: Edward J. Xu
+date: Mar 29th, 2019
+---
+
+```{r global_options, set up, include=FALSE}
+rm(list=ls()) #To clear namespace
+library(knitr)
+knitr::opts_chunk$set(fig.height = 5, fig.width = 12, warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(HistogramTools)
+library(MASS)
+```
+
+# Question 1, Stability
+
+Simulate 10 realisations with 200 observations from the process and plot in the same plot.
+
+```{r, fig.height = 10, fig.width = 12}
+lists_ts_ar2ma1 <- vector("list", 10)
+set.seed(1)
+for (i in seq(10)){
+    lists_ts_ar2ma1[[i]] <- arima.sim(model = list(order = c(2, 0, 1), ar = c(0.8, 0.1), ma = 0.8), n = 200)
+}
+par(mfrow = c(10, 1), mar = c(0.5, 0.5, 0.5, 0.5), oma = c(2, 2, 2, 2))
+for (i in seq(10)){
+    plot.ts(lists_ts_ar2ma1[[i]], xaxt = "n", xlab = NULL, ylab = NULL, frame.plot = TRUE)
+}
+title(main = "10 Realizations from the ARIMA(2,0,1) Process", cex.main = 2, outer = TRUE)
+axis(1, at = seq(0, 200, by = 10), las = 0, outer = TRUE)
+```
+
+```{r, fig.height = 12, fig.width = 12}
+vec_acf <- c(0.5896, 0.5596, 0.5066, rep(0, 18))
+for (i in seq(4, 21)){
+    vec_acf[i] <- 0.8 * vec_acf[i-1] + 0.1 * vec_acf[i-2]
+}
+vec_acf <- vec_acf / vec_acf[1]
+par(mfrow = c(10, 1), mar = c(0.5, 0.5, 0.5, 0.5), oma = c(2, 2, 2, 2))
+for (i in seq(10)){
+    acf(lists_ts_ar2ma1[[i]], lag.max = 20, xaxt = "n", xlab = NULL, ylab = NULL, frame.plot = TRUE)
+    lines(seq(0, 20), vec_acf, type = "l", col = "red", lty = 2, lwd = 2)
+    if (i == 1){
+        legend("topright", inset = .02, legend = c("Estimated ACF", "5% significance limits", "Calculated ACF"), 
+            col = c("black", "blue", "red", "red", "red"), lty = c(1, 2, 2), lwd = c(1, 1, 2))
+    }
+}
+title(main = "ACF of 10 Realizations from the ARIMA(2,0,1) Process", cex.main = 2, outer = TRUE)
+axis(1, at = seq(0, 20), las = 0, outer = TRUE)
+```
+
+```{r, fig.height = 5, fig.width = 11}
+mat_acf <- matrix(nrow = 10, ncol = 41)
+for (i in seq(10)){
+    mat_acf[i,] <- acf(lists_ts_ar2ma1[[i]], lag.max = 40, plot = F)$acf[,1,1]
+}
+# Manual Calculation of AC
+vec_acf <- c(0.5896, 0.5596, 0.5066, rep(0, 38))
+for (i in seq(4, 41)){
+    vec_acf[i] <- 0.8 * vec_acf[i-1] + 0.1 * vec_acf[i-2]
+}
+vec_acf <- vec_acf / vec_acf[1]
+# Functional Calculation of AC
+vec_acf_2 <- ARMAacf(c(0.8, 0.1), 0.8, lag.max = 40, pacf = FALSE)
+# Plot different ACFs
+plot(seq(0, 40), vec_acf, ylim = c(min(mat_acf), 1),
+     type = "l", col = "red", lty = 2, lwd = 3, xlab = "lags", ylab = "autocovariance function", 
+     main = "Estimated ACF from Realizations and Manual Calculated ACF of ARIMA(2,0,1)")
+lines(seq(0, 40), rep(0.05, 41), type = "l", col = "blue", lty = 2, lwd = 1)
+lines(seq(0, 40), rep(0.05, 41), type = "l", col = "blue", lty = 2, lwd = 1)
+lines(seq(0, 40), rep(-0.05, 41), type = "l", col = "blue", lty = 2, lwd = 1)
+legend("topright", inset = .02, legend = c("Estimated ACF", "5% significance limits", "Manual Calculated ACF"), 
+       col = c("black", "blue", "red"), lty = c(1, 2, 2), lwd = c(1, 1, 3))
+for (i in seq(10)){
+    lines(seq(0, 40), mat_acf[i,], type = "l", col = "black", lty = 1, lwd = 1)
+}
+```
+
+
+```{r, fig.height = 12, fig.width = 12}
+par(mfrow = c(10, 1), mar = c(0.5, 0.5, 0.5, 0.5), oma = c(2, 2, 2, 2))
+for (i in seq(10)){
+    pacf(lists_ts_ar2ma1[[i]], lag.max = 20, xaxt = "n", xlab = NULL, ylab = NULL, frame.plot = TRUE)
+}
+title(main = "PACF of 10 Realizations from the ARIMA(2,0,1) Process", cex.main = 2, outer = TRUE)
+axis(1, at = seq(0, 20), las = 0, outer = TRUE)
+```
+
+```{r, fig.height = 5, fig.width = 11}
+mat_pacf <- matrix(nrow = 10, ncol = 20)
+for (i in seq(10)){
+    mat_pacf[i,] <- pacf(lists_ts_ar2ma1[[i]], lag.max = 20, plot = F)$acf[,1,1]
+}
+# Functional Calculation of PACF
+vec_pacf <- ARMAacf(c(0.8, 0.1), 0.8, lag.max = 20, pacf = TRUE)
+# Plot different PACFs
+plot(seq(1, 20), vec_pacf, ylim = c(min(mat_pacf), 1),
+     type = "l", col = "red", lty = 2, lwd = 3, xaxt = "n", bty = "n", xlab = "lags", ylab = "autocovariance function", 
+     main = "Estimated PACF from Realizations and Function-Calculated PACF of ARIMA(2,0,1)")
+lines(seq(1, 20), rep(0.05, 20), type = "l", col = "blue", lty = 2, lwd = 1)
+lines(seq(1, 20), rep(-0.05, 20), type = "l", col = "blue", lty = 2, lwd = 1)
+legend("topright", inset = .02, legend = c("Estimated PACF", "5% significance limits", "Fun-Calculated PACF"), 
+       col = c("black", "blue", "red"), lty = c(1, 2, 2), lwd = c(1, 1, 3))
+for (i in seq(10)){
+    lines(seq(1, 20), mat_pacf[i,], type = "l", col = "black", lty = 1, lwd = 1)
+}
+axis(1, at = seq(1, 20, by = 1), las = 0, outer = FALSE)
+```
+
+# Question 2, Predicting the Carbon-Dioxide Level in an Office
+
+```{r}
+list_co2.log.mean <- c(6.153, 6.308, 6.327, 6.344, 6.266, 6.121, 6.096, 6.081, 
+                       6.178, 6.411, 6.442, 6.505, 6.195, 6.085, 6.086, 6.079)
+list_co2.log <- list_co2.log.mean - 6.24
+pred_co2.log_1.hat <- function(t, list_co2.log){
+    return(0.547 * list_co2.log[t] + 0.86 * list_co2.log[t-7] - 0.47042 * list_co2.log[t-8])
+}
+pred_co2.log_2.hat <- function(t, list_co2.log){
+    return(0.299209 * list_co2.log[t] + 0.86 * list_co2.log[t-5] - 0.47042 * list_co2.log[t-6] +
+           0.47042 * list_co2.log[t-7] - 0.25731974 * list_co2.log[t-8])
+}
+co2.log_17.hat <- pred_co2.log_1.hat(16, list_co2.log)
+co2.log_18.hat <- pred_co2.log_2.hat(16, list_co2.log)
+# Prediction Interval
+cal_vec_intervalPred <- function(y.hat, var, prob = 0.95){
+    quantileNormDist <- qnorm(p = 0.95)
+    boundUp <- y.hat + quantileNormDist * sqrt(var)
+    boundLow <- y.hat - quantileNormDist * sqrt(var)
+    return(list(boundUp = drop(boundUp), boundLow = drop(boundLow)))
+}
+vec_intervalPred_17.hat.mean <- cal_vec_intervalPred(y.hat = co2.log_17.hat + 6.24, var = 4.225e-3)
+vec_intervalPred_18.hat.mean <- cal_vec_intervalPred(y.hat = co2.log_18.hat + 6.24, var = 6.536075E-3)
+```
+
+Plot the result
+
+```{r, fig.height = 5, fig.width = 11}
+plot(seq(1, 16), list_co2.log.mean, 
+     type = "b", col = "blue", lwd = 1, lty = 1, xaxt = "n", bty = "n", xlim = c(0, 19), ylim = c(6.0, 6.6),
+     main = paste("Two-Step Prediction of Carbon-Dioxide Level in an Office by ARIMA(1,8,0) Model"), 
+     xlab = "Series", ylab = "Degree")
+points(c(17, 18), c(co2.log_17.hat + 6.24, co2.log_18.hat + 6.24), 
+       type = "b", col = "blue", lty = 1, pch = 16)  # Predicted values
+lines(c(16, 17), c(list_co2.log.mean[16], co2.log_17.hat + 6.24), 
+      type = "c", col = "blue", lty = 1)  # Connect observations with one step prediction
+legend("topleft", inset = .02, legend = c("Observations", "Prediction", "Pred Interval"), 
+       col = c("blue", "blue", "red"), pch = c(1, 16, 15), 
+       lty = c(1, 1, 3), lwd = c(1, 1, 3))
+# Plot the prediction result
+points(c(17, 17), vec_intervalPred_17.hat.mean, 
+       type = "b", col = "red", pch = 15, lty = 3, lwd = 2)
+points(c(18, 18), vec_intervalPred_18.hat.mean, 
+       type = "b", col = "red", pch = 15, lty = 3, lwd = 2)
+axis(1, at = seq(1, 18, by = 1), las = 0, outer = FALSE)
+```
+
+# Question 3, Simulating Seasonal Processes
+
+Define the function to plot the residuals for analysis.
+
+```{r}
+# Plot the time series / residuals and its ACF and PACF. No Ljung-Box plot
+plotTimeSeriesResidual <- function(dat, num_lag = 50, list_para, ...){
+    # If the input dat is arima model, just take its residuals are the dat.
+    if(class(dat) == "Arima")
+        dat <- dat$residuals
+    par(mfrow = c(3, 1), mgp = c(2, 0.7, 0), mar = c(1, 1, 1, 1), oma = c(2, 2, 4, 2), 
+        cex.lab = 0.8, cex.axis = 0.8)
+    plot(dat)
+    title(main = paste("TS, ACF, PACF when phi_1(", list_para[1], "), phi_2(", list_para[2], 
+                       "), phi.cap(", list_para[3], ") theta(", list_para[4], ") and theta.cap(", list_para[5], 
+                       ")"), cex.main = 1.5, line = 1, outer = TRUE)
+    acf(dat, lag.max = 20, xaxt = "n")
+    axis(1, at = seq(0, 20, by = 1), las = 0, outer = FALSE)
+    pacf(dat, lag.max = 20, xaxt = "n")
+    axis(1, at = seq(1, 20, by = 1), las = 0, outer = FALSE)
+    # Ljung-Box Plot
+    # value_p <- sapply(1:num_lag, function(i) Box.test(dat, i, type = "Ljung-Box")$p.value)
+    # plot(1L: num_lag, value_p, main = "p Values for Ljung-Box Statistic",
+    #      xlab = "lag", ylab = "p value", ylim = c(0,1))
+    # abline(h = 0.05, lty = 2, col = "blue")
+}
+```
+
+```{r}
+jud_stationary_arima <- function(vec_phi){
+    # Different definitions of ARMA models have different signs for the AR and/or MA coefficients.
+    # How to decide the sign of phi is that phi and past observations are in left-hand-side
+    # Edward J. Xu, 190402
+    vec_phi <- c(1, vec_phi)
+    vec.rev_phi <- rev(vec_phi)
+    vec_root <- polyroot(vec.rev_phi)
+    vec_root.abs <- abs(vec_root)
+    vec_root.abs.unit <- abs(vec_root) <= rep(1, length(vec_root))
+    return(all(vec_root.abs.unit))
+}
+```
+
+```{r}
+list_phi_1 <- c(0.8, 0, -0.7, -0.8, 0.6, 0)
+list_phi_2 <- c(0, 0, 0, 0, 0.5, 0)
+list_phi.cap_1 <- c(0, - 0.85, 0, 0.7, 0.9, 0)
+list_theta_1 <- c(0, 0, 0, 0, 0, - 0.9)
+list_theta.cap_1 <- c(0, 0, 0.8, 0, 0, 0.7)
+mat_phi <- matrix(0, nrow = 6, ncol = 14)
+mat_theta <- matrix(0, nrow = 6, ncol = 13)
+list_stationary <- logical(length = 6)
+for (i in seq(6)){
+    phi_1 <- list_phi_1[i]
+    phi_2 <- list_phi_2[i]
+    phi.cap_1 <- list_phi.cap_1[i]
+    theta_1 <- list_theta_1[i]
+    theta.cap_1 <- list_theta.cap_1[i]
+    mat_phi[i,] <- c(phi_1, phi_2, rep(0, 9), phi.cap_1, phi_1 * phi.cap_1, phi_2 * phi.cap_1)
+    mat_theta[i,] <- c(theta_1, rep(0, 10), theta.cap_1, theta_1 * theta.cap_1)
+    list_stationary[i] <- jud_stationary_arima(mat_phi[i,])
+}
+```
+
+```{r, warning=FALSE, fig.height = 4, fig.width = 11}
+list_ts_ar13ma13 <- vector("list", 6)
+set.seed(99)
+for(i in seq(6)){
+    if(list_stationary[i]){
+        list_para <- rep(0, 5)
+        list_para[1] <- list_phi_1[i]
+        list_para[2] <- list_phi_2[i]
+        list_para[3] <- list_phi.cap_1[i]
+        list_para[4] <- list_theta_1[i]
+        list_para[5] <- list_theta.cap_1[i]
+        list_ts_ar13ma13[[i]] <- arima.sim(model = list(ar = - mat_phi[i,], ma =  mat_theta[i,]), n = 200)
+        plotTimeSeriesResidual(list_ts_ar13ma13[[i]], list_para = list_para)
+    }
+}
+```
+
+# Simulate and Estimation
+
+```{r}
+sim_ar1ma1 <- function(phi, theta, sigma, numtime_Sim){
+    # Different definitions of ARMA models have different signs for the AR and/or MA coefficients.
+    set.seed(99)
+    lists_ts_ar1ma1 <- vector("list", 100)
+    lists_mod_ar1ma1 <- vector("list", 100)
+    vec_phi.est <- rep(0, 100)
+    vec_theta.est <- rep(0, 100)
+    for (i in seq(100)){
+        # while(any(class(out <- tryCatch(arima(lists_ts_ar1ma1[[i]] <- arima.sim(model = list(ar = - phi_1, 
+        #     ma = theta_1), sd = sigma, n = numtime_Sim), order = c(1, 0, 1), include.mean = FALSE), 
+        #     error = function(e) e)) == "error")){
+            # j <- j + 1
+            # set.seed(j)
+        # }
+        lists_ts_ar1ma1[[i]] <- arima.sim(model = list(ar = - phi, ma = theta), sd = sigma, n = numtime_Sim)
+        lists_mod_ar1ma1[[i]] <- arima(lists_ts_ar1ma1[[i]], order = c(1, 0, 1), method = "ML",
+                                       include.mean = FALSE)
+        # Remember to specify the estimation method
+        vec_phi.est[i] <- lists_mod_ar1ma1[[i]]$coef[1]
+        vec_theta.est[i] <- lists_mod_ar1ma1[[i]]$coef[2]
+    }
+    quan95 <- ApproxQuantile(hist(vec_phi.est, breaks = 50, plot = FALSE), 0.95)
+    list_result <- list(quan95 = quan95, vec_phi.est = vec_phi.est, vec_theta.est = vec_theta.est)
+    return(list_result)
+}
+histPhi_sim_ar1ma1 <- function(vec_phi.est, phi, theta, sigma, numtime_Sim){
+    den_phi.est <- density(vec_phi.est, adjust = 0.2)
+    hist_phi.est <- hist(vec_phi.est, breaks = 50, plot = FALSE)
+    hist(vec_phi.est, breaks = 50, freq = FALSE, ylim = c(0, max(hist_phi.est$density, den_phi.est$y)), 
+         xlab = "phi_1", main = NULL)  # cex.lab = 0.8, cex.axis = 0.8
+    lines(den_phi.est, col = "blue", lwd = 2)
+    title(main = paste("Hist of phi when times(",numtime_Sim,"), phi(", 
+                       phi, "), theta(", theta, ") and sd(", sigma, ")"))  # cex.main = 0.8
+}
+histPhi.2_sim_ar1ma1 <- function(vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1, 
+                                 vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2){
+    par(mfrow = c(1, 2), mar = c(0.5, 1.5, 0.5, 0.5), oma = rep(2, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    histPhi_sim_ar1ma1(vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1)
+    histPhi_sim_ar1ma1(vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2)
+}
+histPhi.4_sim_ar1ma1 <- function(mat_phi.est, vec_phi, vec_theta, vec_sigma, vec_numtime_Sim){
+    par(mfrow = c(2, 2), mar = c(1.5, 1.5, 1.5, 1.5), oma = rep(1, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    for (i in seq(1, 4)){
+        histPhi_sim_ar1ma1(mat_phi.est[i,], vec_phi[i], vec_theta[i], vec_sigma[i], vec_numtime_Sim[i])
+    }
+}
+plotContour_sim_ar1ma1 <- function(vec_theta.est, vec_phi.est, phi, theta, sigma, numtime_Sim){
+    kde_ar1ma1_1 <- kde2d(vec_theta.est, vec_phi.est, n = 20)
+    contour(kde_ar1ma1_1, xlab = "theta", ylab = "phi", bty = "n", main = NULL) 
+    points(theta, - phi, pch = 4, cex = 2, lwd = 2, col = "red")
+    title(main = paste("Contour of theta(", theta, ") and phi(", phi, ") when times(", numtime_Sim ,
+        "), sd(", sigma, ")"))
+}
+plotContour.2_sim_ar1ma1 <- function(vec_theta.est_1, vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1, 
+                                     vec_theta.est_2, vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2){
+    par(mfrow = c(1, 2), mar = c(0.5, 1.5, 0.5, 0.5), oma = rep(2, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    plotContour_sim_ar1ma1(vec_theta.est_1, vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1)
+    plotContour_sim_ar1ma1(vec_theta.est_2, vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2)
+}
+plotContour.4_sim_ar1ma1 <- function(mat_theta.est, mat_phi.est, vec_phi, vec_theta, vec_sigma, vec_numtime_Sim){
+    par(mfrow = c(2, 2), mar = c(1.5, 1.5, 1.5, 1.5), oma = rep(1, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    for (i in seq(1, 4)){
+        plotContour_sim_ar1ma1(mat_theta.est[i,], mat_phi.est[i,], vec_phi[i], 
+                               vec_theta[i], vec_sigma[i], vec_numtime_Sim[i])
+    }
+}
+plotQQ_sim_ar1ma1 <- function(vec_phi.est, phi, theta, sigma, numtime_Sim){
+    qqnorm(vec_phi.est, main = NULL, bty = "n")
+    qqline(vec_phi.est)
+    title(main = paste("Norm Q-Q Plot of phi when times(", numtime_Sim ,
+                       "), phi(", phi, "), theta(", theta, ") and sd(", sigma, ")"))
+}
+plotQQ.2_sim_ar1ma1 <- function(vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1, 
+                                vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2){
+    par(mfrow = c(1, 2), mar = c(0.5, 1.5, 0.5, 0.5), oma = rep(2, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    plotQQ_sim_ar1ma1(vec_phi.est_1, phi_1, theta_1, sigma_1, numtime_Sim_1)
+    plotQQ_sim_ar1ma1(vec_phi.est_2, phi_2, theta_2, sigma_2, numtime_Sim_2)
+}
+plotQQ.4_sim_ar1ma1 <- function(mat_phi.est, vec_phi, vec_theta, vec_sigma, vec_numtime_Sim){
+    par(mfrow = c(2, 2), mar = c(1.5, 1.5, 1.5, 1.5), oma = rep(1, 4), 
+        cex.lab = 0.8, cex.axis = 0.8, cex.main = 0.8)
+    for (i in seq(1, 4)){
+        plotQQ_sim_ar1ma1(mat_phi.est[i,], vec_phi[i], vec_theta[i], vec_sigma[i], vec_numtime_Sim[i])
+    }
+}
+```
+
+Judge whether the given process are stationary.
+
+```{r}
+jud_stationary_arima(- 0.9)
+jud_stationary_arima(- 0.995)
+```
+
+```{r, fig.height = 5, fig.width = 10, warning=FALSE}
+list_result_1 <- sim_ar1ma1(- 0.9, 0.4, 0.1, 300)
+list_result_2 <- sim_ar1ma1(- 0.9, 0.4, 5, 300)
+list_result_3 <- sim_ar1ma1(- 0.995, 0.4, 0.1, 300)
+list_result_4 <- sim_ar1ma1(- 0.995, 0.4, 5, 300)
+mat_phi.est <- matrix(nrow = 4, ncol = 100)
+mat_phi.est[1,] <- list_result_1$vec_phi.est
+mat_phi.est[2,] <- list_result_2$vec_phi.est
+mat_phi.est[3,] <- list_result_3$vec_phi.est
+mat_phi.est[4,] <- list_result_4$vec_phi.est
+mat_theta.est <- matrix(nrow = 4, ncol = 100)
+mat_theta.est[1,] <- list_result_1$vec_theta.est
+mat_theta.est[2,] <- list_result_2$vec_theta.est
+mat_theta.est[3,] <- list_result_3$vec_theta.est
+mat_theta.est[4,] <- list_result_4$vec_theta.est
+```
+
+```{r, fig.height = 8, fig.width = 11}
+histPhi.4_sim_ar1ma1(mat_phi.est, c(- 0.9, - 0.9, - 0.995, - 0.995), rep(0.4, 4), c(0.1, 5, 0.1, 5), rep(300, 4))
+```
+
+```{r, fig.height = 8, fig.width = 11}
+plotContour.4_sim_ar1ma1(mat_theta.est, mat_phi.est, c(- 0.9, - 0.9, - 0.995, - 0.995), rep(0.4, 4), c(0.1, 5, 0.1, 5), rep(300, 4))
+```
+
+```{r, fig.height = 8, fig.width = 11}
+plotQQ.4_sim_ar1ma1(mat_phi.est, c(- 0.9, - 0.9, - 0.995, - 0.995), rep(0.4, 4), c(0.1, 5, 0.1, 5), rep(300, 4))
+```
+
+```{r, echo = FALSE}
+quan95.frame <- data.frame(vec_phi_1 = c(- 0.9, - 0.9, - 0.995, - 0.995),
+    vec_sigma = c(0.1, 5, 0.1, 5), vec_quan95 = c(list_result_1$quan95, list_result_2$quan95,
+                                                  list_result_3$quan95, list_result_4$quan95))
+knitr::kable(quan95.frame, col.names = c('phi_1', 'sigma', '95% quantile'), 
+             caption = '95% quantile from ARIMA Fit', align = "l", full_width = F)
+```
+
+## The Effect of Number of Simulated Observations
+
+```{r, fig.height = 5, fig.width = 11}
+list_result_5 <- sim_ar1ma1(- 0.9, 0.4, 1, 100)
+list_result_6 <- sim_ar1ma1(- 0.9, 0.4, 1, 1000)
+```
+
+```{r, fig.height = 5, fig.width = 11}
+histPhi.2_sim_ar1ma1(list_result_5$vec_phi.est, - 0.9, 0.4, 1, 100,
+                     list_result_6$vec_phi.est, - 0.9, 0.4, 1, 1000)
+```
+
+```{r, fig.height = 5, fig.width = 11}
+plotQQ.2_sim_ar1ma1(list_result_5$vec_phi.est, - 0.9, 0.4, 1, 100,
+                    list_result_6$vec_phi.est, - 0.9, 0.4, 1, 1000)
+```
+
+```{r, fig.height = 5, fig.width = 11}
+plotContour.2_sim_ar1ma1(list_result_5$vec_theta.est, list_result_5$vec_phi.est, -0.9, 0.4, 1, 300,
+                         list_result_6$vec_theta.est, list_result_6$vec_phi.est, -0.9, 0.4, 1, 1000)
+```
+

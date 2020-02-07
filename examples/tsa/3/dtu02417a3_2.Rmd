@@ -1,0 +1,41 @@
+---
+title: "dtu02417a3: ARIMAX Model for Building Data"
+output: html_notebook
+author: Edward J. Xu (Jie Xu), s181238
+date: 17th April, 2019
+---
+
+```{r, include=FALSE}
+# Clear variables
+rm(list=ls())
+library(knitr)
+source('LinearStocSystem_EDXU.R')
+source("Data.R")
+```
+
+# Question 3.4, ARIMAX Model
+
+## ARIMA Model of External Temperature
+
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1 <- arima(dat.f$tempExternal, order = c(0, 1, 0), include.mean = F)
+mod_1
+plotTimeSeriesResidual(mod_1, num_lag = 100, "ARIMA Model 1 of External Temperature")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1.1 <- arima(mod_1$residuals, order = c(0, 0, 1), include.mean = T)
+mod_1.1
+plotTimeSeriesResidual(mod_1.1, num_lag = 100, "ARIMA Model 1.1 of External Temperature")
+```
+
+
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_1.1.1 <- arima(mod_1.1$residuals, order = c(0, 0, 0), seasonal = list(order = c(0, 0, 1), period = 48), 
+                   include.mean = F)
+mod_1.1.1
+plotTimeSeriesResidual(mod_1.1.1, num_lag = 100, "ARIMA Model 1.1.1 of External Temperature")
+```
+

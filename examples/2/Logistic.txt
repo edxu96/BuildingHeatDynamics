@@ -1,3 +1,0 @@
-"AZT" "AIDS_yes" "n"
-Yes 25 170
-No 44 168

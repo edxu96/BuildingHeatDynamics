@@ -1,0 +1,150 @@
+---
+title: "dtu02417a3: ARIMA Model of Heating"
+output: html_notebook
+author: Edward J. Xu (Jie Xu), s181238
+date: 17th April, 2019
+---
+
+```{r, include=FALSE}
+# Clear variables
+rm(list=ls())
+library(knitr)
+source('LinearStocSystem_EDXU.R')
+source("Data.R")
+```
+
+# Question 3.2
+
+## Raw Data
+
+```{r, warning=FALSE, fig.height = 6, fig.width = 11}
+plotTimeSeries(dat.f$heating, num_lag = 100, "Heating")
+```
+
+# Question 3.3: ARIMA Model of Heating
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3 <- arima(dat.f$heating, order = c(0, 1, 0), include.mean = F)
+mod_3
+plotTimeSeriesResidual(mod_3, num_lag = 100, "Model 3")
+```
+
+Except for the seasonal effect, the ACF and PACF become 0 after lag 2. So it's hard to decide whether it's a AR2 or MA2 model.
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1 <- arima(mod_3$residuals, seasonal = list(order = c(0, 0, 1), period = 48), include.mean = F)
+mod_3.1
+plotTimeSeriesResidual(mod_3.1, num_lag = 100, "Model 3.1")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2 <- arima(mod_3$residuals, seasonal = list(order = c(1, 0, 0), period = 48), include.mean = F)
+mod_3.2
+plotTimeSeriesResidual(mod_3.2, num_lag = 100, "Model 3.2")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1.1 <- arima(mod_3.1$residuals, order = c(2, 0, 0), include.mean = F)
+mod_3.1.1
+plotTimeSeriesResidual(mod_3.1.1, num_lag = 100, "Model 3.1.1")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1.2 <- arima(mod_3.1$residuals, order = c(2, 0, 0), fixed = c(0, NA), include.mean = F)
+mod_3.1.2
+plotTimeSeriesResidual(mod_3.1.2, num_lag = 100, "Model 3.1.2")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1.3 <- arima(mod_3.1$residuals, order = c(0, 0, 2), include.mean = F)
+mod_3.1.3
+plotTimeSeriesResidual(mod_3.1.3, num_lag = 100, "Model 3.1.3")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1.4 <- arima(mod_3.1$residuals, order = c(0, 0, 2), fixed = c(0, NA), include.mean = F)
+mod_3.1.4
+plotTimeSeriesResidual(mod_3.1.4, num_lag = 100, "Model 3.1.4")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.1.5 <- arima(mod_3.1$residuals, order = c(2, 0, 2), fixed = c(0, NA, 0, NA), include.mean = F)
+mod_3.1.5
+plotTimeSeriesResidual(mod_3.1.5, num_lag = 100, "Model 3.1.5")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2 <- arima(mod_3$residuals, order = c(0, 0, 0), seasonal = list(order = c(1, 0, 0), period = 48), include.mean = F)
+mod_3.2
+plotTimeSeriesResidual(mod_3.2, num_lag = 100, "Model 3.2")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2.1 <- arima(mod_3.2$residuals, order = c(2, 0, 0), include.mean = F)
+mod_3.2.1
+plotTimeSeriesResidual(mod_3.2.1, num_lag = 100, "Model 3.2.1")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2.2 <- arima(mod_3.2$residuals, order = c(2, 0, 0), fixed = c(0, NA), include.mean = F)
+mod_3.2.2
+plotTimeSeriesResidual(mod_3.2.2, num_lag = 100, "Model 3.2.2")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2.3 <- arima(mod_3.2$residuals, order = c(0, 0, 2), include.mean = F)
+mod_3.2.3
+plotTimeSeriesResidual(mod_3.2.3, num_lag = 100, "Model 3.2.3")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.2.4 <- arima(mod_3.2$residuals, order = c(0, 0, 2), fixed = c(0, NA), include.mean = F)
+mod_3.2.4
+plotTimeSeriesResidual(mod_3.2.4, num_lag = 100, "Model 3.2.4")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.3 <- arima(mod_3$residuals, order = c(0, 0, 0), seasonal = list(order = c(0, 1, 0), period = 48), include.mean = F)
+mod_3.3
+plotTimeSeriesResidual(mod_3.3, num_lag = 100, "Model 3.3")
+```
+
+```{r, warning=FALSE, fig.height = 11, fig.width = 11}
+mod_3.3.1 <- arima(mod_3$residuals, order = c(2, 0, 0), seasonal = list(order = c(1, 0, 0), period = 48), 
+                   include.mean = F)
+mod_3.3.1
+plotTimeSeriesResidual(mod_3.3.1, num_lag = 100, "Model 3.3.1")
+```
+
+# Test
+
+```{r}
+mod_3.1.4 <- arima(dat.f$heating[1: num_obs], order = c(0, 1, 2), seasonal = list(order = c(0, 0, 2), period = 48), 
+    fixed = c(0, NA, NA, NA), include.mean = T)
+mod_3.1.3 <- arima(dat.f$heating[1: num_obs], order = c(0, 1, 2), seasonal = list(order = c(0, 0, 2), period = 48), 
+    include.mean = T)
+mod_3.1.1 <- arima(dat.f$heating[1: num_obs], order = c(2, 1, 0), seasonal = list(order = c(0, 0, 2), period = 48), 
+    include.mean = T)
+mod_3.1.2 <- arima(dat.f$heating[1: num_obs], order = c(2, 1, 0), seasonal = list(order = c(0, 0, 2), period = 48), 
+    fixed = c(0, NA, NA, NA), include.mean = T)
+```
+
+
+```{r, echo = FALSE, warning=FALSE}
+table <- testModel(list(mod_3.1.4, mod_3.1.1, mod_3.1.2, mod_3.1.3), 
+                   c("mod_3.1.4", "mod_3.1.1", "mod_3.1.2", "mod_3.1.3"))
+kable(table, col.names = c('Name', 'Type', 'Coefficients', 'AIC', 'LogLikRatio Test', 'F-Dist Test'), 
+      caption = 'Comparison Between Different Model for Heating', align = "l")
+```
+
+
+
+
+
+
+
+
+
+
+
+

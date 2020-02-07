@@ -1,0 +1,139 @@
+---
+title: "Logistic Regression, AZT, EDXU"
+output: html_notebook
+auther: Edward J. Xu
+---
+
+There are two data sets for this assignment both dealing with the treatment of HIV patients. The first data set comes from a randomized study described in the New York Times (1991) looking at the effect of AZT (azidothymidine) on slowing the development of AIDS symptoms. The study included 338 individuals with HIV, who were randomized to either receive AZT immedi- ately (AZT=yes) or only after severe immune weakness (AZT=no). At the end of the study the number of patients, who developed AIDS, was recorded for the two treatment groups. The data from this study are found in the file Logistic.txt .
+
+```{r, include = FALSE}
+# Clear variables
+rm(list = ls())
+```
+
+## data_AZT Prepossessing
+
+i = 1, means receive AZT immediately (AZT=yes);  
+i = 0, means receive AZT only after severe immune weakness.
+
+```{r}
+data_AZT <- read.table("Logistic.txt", header = TRUE)
+i <- c(1,0)  # [Whether receive AZT immediately or not]
+i_failure <- c(0,1)  # [Whether receive AZT only after severe immune weakness or not]
+x_i <- data_AZT[,3] - data_AZT[,2]  # [Number of successes for i] Don't develop AIDS
+n_i <- data_AZT[,3]  # [Number of experiments for i] 
+data.f_AZT <- data.frame(i, i_failure, x_i, n_i)
+```
+
+```{r}
+## negative log likelihood function
+negaLogL <- function(beta, y, X, n){
+    theta <- exp(X %*% beta) / (1 + exp(X %*% beta))
+    - sum(dbinom(y, size = n, prob = theta, log = TRUE))
+}
+```
+
+## Logistic Regression of Aggregated Binomial Distribution
+
+```{r}
+## Observation and design matrix
+vec_y.tot <- data.f_AZT$x_i
+vec_X.tot <- cbind(1, data.f_AZT$i)
+vec_n.tot <- data.f_AZT$n
+
+opt_AZT.tot <- nlminb(c(-1, 1), negaLogL, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot)
+
+glm_AZT.tot <- glm(formula = cbind(vec_y.tot, vec_n.tot - vec_y.tot) ~ -1 + vec_X.tot, family = binomial)
+```
+
+## Logistic Regression of De-aggregated Binomial Distribution
+
+```{r}
+## Observation and design matrix
+vec_y <- c(rep(1, data.f_AZT$x_i[1]), rep(0, data.f_AZT$n[1] - data.f_AZT$x_i[1]),
+           rep(1, data.f_AZT$x_i[2]), rep(0, data.f_AZT$n[2] - data.f_AZT$x_i[2])) 
+vec_i <- c(rep(1, data.f_AZT$n[1]), rep(0, data.f_AZT$n[2]))
+vec_X <- cbind(1, vec_i)
+
+opt_AZT <- nlminb(c(-1, 1), negaLogL, y = vec_y, X = vec_X, n = 1)
+
+glm_AZT <- glm(vec_y ~ -1 + vec_X, family = binomial)
+```
+
+We will use aggregated binomial distribution in the rest of the analysis, because it's more convinent.
+
+```{r}
+library(numDeriv)
+H_AZT.tot <- hessian(negaLogL, opt_AZT.tot$par, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot)
+stdError.beta <- sqrt(diag(solve(H_AZT.tot)))
+I_AZT.tot <- - H_AZT.tot
+```
+
+```{r}
+knitr::kable(summary(glm_AZT.tot)$coefficient)
+```
+
+```{r}
+pred <- predict(glm_AZT.tot, type = "response", inteval = "cofidence", se.fit = TRUE, level = 0.95)
+knitr::kable(cbind(c('beta1', 'beta2'), pred$fit, pred$fit + 2 * pred$se.fit, pred$fit - 2 * pred$se.fit), col.names = c('Parameter', 'Predicted Value', 'upper', 'lower'))
+```
+
+# Hypothesis Test
+
+```{r}
+calProfileLogL <- function(beta1, y, X, n){
+    beta <- c(beta1, 0)
+    theta <- exp(X %*% beta) / (1 + exp(X %*% beta))
+    return(sum(dbinom(y, size = n, prob = theta, log = TRUE)))
+}
+calProfileLogL2 <- function(vec_beta1, y, X, n){
+    profileNegaLogL <- rep(0, length(vec_beta1))
+    i <- 1
+    for (beta1 in vec_beta1){
+        beta <- c(beta1, 0)
+        theta <- exp(X %*% beta) / (1 + exp(X %*% beta))
+        profileNegaLogL[i] <- sum(dbinom(y, size = n, prob = theta, log = TRUE))
+        i <- i + 1
+    }
+    return(profileNegaLogL)
+}
+beta1 <- seq(0, 2, by = 0.1)
+# profileNegaLogL <- sapply(beta1, calProfileLogL, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot)
+profileNegaLogL <- calProfileLogL2(vec_beta1 = beta1, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot)
+plot(beta1, profileNegaLogL - max(profileNegaLogL), type = "l", ylab = "Log Likelihood")
+lines(range(beta1),- qchisq(0.95, df = 1) / 2 * c(1,1), lty = 2, col = 2)
+title("Profile Likelihood for Logistic Regression")
+```
+
+```{r}
+profileLogL.optim <- optimize(calProfileLogL, c(0, 2), y = vec_y.tot, X = vec_X.tot, n = vec_n.tot, maximum = TRUE)
+beta1_profileLogL.optim <- profileLogL.optim$maximum
+```
+
+## Wald Statistic
+
+```{r}
+# waldStatistic <- (opt_AZT.tot$par - c(beta1_profileLogL.optim, 0)) / stdError.beta
+W_AZT.0 <- t(opt_AZT.tot$par - c(beta1_profileLogL.optim, 0)) %*% I_AZT.tot %*% (opt_AZT.tot$par - c(beta1_profileLogL.optim, 0))
+W_AZT.0
+```
+
+## Likelihood ratio test
+
+```{r}
+Q_AZT.0 <- -2 * log(calProfileLogL(beta1 = beta1_profileLogL.optim, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot) / (- negaLogL(beta = opt_AZT.tot$par, y = vec_y.tot, X = vec_X.tot, n = vec_n.tot)))
+Q_AZT.0
+```
+
+## Score Test
+
+```{r}
+S_AZT.0 <- c(x_i[1] + x_i[2] - 2 * exp(beta1_profileLogL.optim) / (1 + exp(beta1_profileLogL.optim)), x_i[1] - 2 * exp(beta1_profileLogL.optim) / (1 + exp(beta1_profileLogL.optim)))
+X2.0 <- t(S_AZT.0) %*% solve(I_AZT.tot) %*% S_AZT.0
+X2.0
+```
+
+
+
+
+

@@ -1,0 +1,50 @@
+TSA Spring 2019
+Assignment 2 - corrections
+
+Student: 
+Edward J. Xu (Jie Xu) - s181238
+
+##################################
+score = 76
+##################################
+
+Q1
+1. 
+2. - you should also give the mean of the process
+3. "very different" what is different? what do they have in common?
+4. - compare to what you know from how this process should look
+5. - compare to what you know from how this process should look
+6. - variances not given.
+
+##################################
+Q2
+a) - variance of second prediciton is wrong. see Week 5, slides 28-29, or EQ 3.61 in the book, for how to compute variance of prediction errors
+- You have to use the t-distribution to find the confidence intervals, because the variance of the noise was estimated from data (not given). see EQ.3.61 in the TSA book. 
+- which values do you get out? The second prediction is at least wrong. 
+b) - but why (based on physical knowledge...) is daily seasonalitiy to be expected?  we expect daily patterns in the usage of the office. (when people enter, co2 level increases)
+c)
+
+###################################
+Q3
+General:
+- It is a good idea to calculate the ACF and PACF to a sufficient high lag to see how the
+seasonal information in the ACF and PACF decays. In the reference solution the ACF
+and PACF are calculated to lag 50 to cover four seasons. Three seasons could be OK
+since we know the true model but less than that is insufficient.
+1.
+2.
+3. + good you discuss what you cannot see.
+4.  + good you discuss what you cannot see.
+5.
+6. 
+Stationarity and Seasonality: 
+Summary:
++ good!
+
+###################################
+Q4
+1. - you should indicate both the 5% and the 95% quantiles in the plots. 
+2. - no, you should look at the width of the confidence interval or at the variance. You cannot tell just from the 95% quantile. You can also see from the distribution in the histogram (see x-axis values!!) that the spread is lower when phi is higher.
+3. + good.
+4. + nice addition with the qq plots
+- "According to contour plots, the distribution of the estimations are more intense around true value if there are more simulation times." SO.. conclusion!
