@@ -9,9 +9,8 @@ cal_ll_o$a <- function(theta, y_i, sigma) {
   }
 
 cal_ll_o$b <- function(theta, y_bar, sigma) {
-  ll_k <- prod(dnorm(y_bar, mean = theta, sd = sigma))
-  
-  return(ll_k)
+  ll <- prod(dnorm(y_bar, mean = theta, sd = sigma))
+  return(ll)
   }
 
 cal_ll_o$c <- function(theta, y_i, sigma) {
@@ -33,15 +32,10 @@ cal_ll_o$e <- function(theta, y_i, sigma) {
   dnorm(y_i[2], mean = theta, sd = sigma)
 }
 
-y_i <- c(73, 75, 84, 76, 93, 79, 85, 80, 76, 78, 80)
-
 y_i <- 
-  tibble(y = c(73, 75, 84, 76, 93, 79, 85, 80, 76, 78, 80)) %>%
-  mutate(i = row_number()) %>%
-  select(i, y)
+  tibble(y = c(73, 75, 84, 76, 93, 79, 85, 80, 76, 78, 80))
 
-
-sigma <- sd(y_i)
+sigma <- sd(y_i$y)
 theta_k <- seq(min(y_i) - 3, max(y_i) + 3, by = 0.01)
 
 
@@ -67,8 +61,6 @@ lines(theta_k, lld / max(lld), col = 4)
 
 ll_o$e <- sapply(theta_k, lle.f, y_i = sort(y_i)[1:2], sigma = sigma)
 lines(theta_k, lle / max(lle), col = 5)
-
-
 
 rug(y_i)
 lines(mean(y_i) * c(1, 1), c(-1, 2), col = 2, lty = 2)
