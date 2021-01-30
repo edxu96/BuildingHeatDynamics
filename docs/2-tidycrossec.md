@@ -53,3 +53,5 @@ the parameters of a normal distribution aka the sample mean and variance, https:
   * `mleci`: MLE-based confidence interval
 
 ## Penal Analysis
+
+The estimator and its estimates have the same notation $\hat{\theta}$.

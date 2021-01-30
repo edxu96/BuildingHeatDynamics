@@ -25,3 +25,15 @@ $$
 6. Consider the distributional statement \(\left.\widehat{\theta} \stackrel{P}{\rightarrow} \theta_{0}, \text { where } \theta_{0} \in\right] 0 ; 1[\) is the population value/true value. Explain what it means and what assumptions are needed.
 
 7. What does it mean that \(\widehat{\theta}\) is asymptotically normally (Gaussian) distributed? Explain why it holds.
+
+## CI
+
+In 5% of the cases, hypothaticcaly repeated samples  are out in the ends, CI will not include theta-node
+
+In 95% of the cases, CI will include the true value.
+
+CI is random, not the true value.
+
+##
+
+consistent
